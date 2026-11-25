@@ -9,7 +9,7 @@ if OUTPUT: Path(OUTPUT).mkdir(parents=True,exist_ok=True)
 
 def html(source, asset):
  uri='data:image/webp;base64,'+base64.b64encode(asset.read_bytes()).decode()
- return source.replace('experiments/sleepy-tabby.webp',uri).replace('experiments/ginger.webp',uri)
+ return source.replace('experiments/sleepy-tabby.webp','data:image/webp;base64,'+base64.b64encode(ASSETS[1][1].read_bytes()).decode()).replace('experiments/ginger.webp','data:image/webp;base64,'+base64.b64encode(ASSETS[0][1].read_bytes()).decode()).replace('experiments/chelsea.webp','data:image/webp;base64,'+base64.b64encode((ROOT/'experiments/chelsea.webp').read_bytes()).decode()).replace('assets/freecat.svg','data:image/svg+xml;base64,'+base64.b64encode((ROOT/'assets/freecat.svg').read_bytes()).decode())
 def coords(page,p):
  return page.evaluate('p=>{const r=cv.getBoundingClientRect();return {x:r.left+r.width*(box[0]+p[0]*box[2]),y:r.top+r.height*(box[1]+p[1]*box[3])}}',p)
 with sync_playwright() as pw:
@@ -17,7 +17,9 @@ with sync_playwright() as pw:
  for w,h in [(1440,900),(390,844),(320,720)]:
   for name,asset in ASSETS:
    p=b.new_page(viewport={'width':w,'height':h},locale='zh-CN',reduced_motion='reduce',has_touch=w<600,is_mobile=w<600,device_scale_factor=1)
-   errors=[];p.on('pageerror',lambda e:errors.append(str(e)));p.set_content(html(SOURCE,asset));p.wait_for_function('!!mask && !cv.hidden && box[2]<1');p.wait_for_timeout(120)
+   errors=[];p.on('pageerror',lambda e:errors.append(str(e)));p.route('https://**/*',lambda route:route.abort());p.set_content(html(SOURCE,asset));p.wait_for_function('!!mask && selectedCat===PHOTO_CAT && !cv.hidden');p.locator('#nextCat').click();p.wait_for_function('selectedCat===0');
+   if name=='ginger': p.locator('#nextCat').click();p.wait_for_function('selectedCat===1')
+   p.evaluate('soundMuted=true');p.wait_for_timeout(120)
    assert p.evaluate('document.documentElement.scrollWidth<=innerWidth')
    assert p.evaluate('hit(point)');assert p.locator('#status').inner_text()=='可以开始抚摸'
    if OUTPUT: p.screenshot(path=str(Path(OUTPUT)/f'{name}-{w}.png'))

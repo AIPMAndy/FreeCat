@@ -8,15 +8,16 @@ if OUT: Path(OUT).mkdir(parents=True,exist_ok=True)
 source=(ROOT/'room.html').read_text()
 portrait='data:image/webp;base64,'+base64.b64encode((ROOT/'experiments/sleepy-tabby.webp').read_bytes()).decode()
 icon='data:image/svg+xml;base64,'+base64.b64encode((ROOT/'assets/freecat.svg').read_bytes()).decode()
-html=source.replace('experiments/sleepy-tabby.webp',portrait).replace('assets/freecat.svg',icon)
+html=source.replace('experiments/sleepy-tabby.webp',portrait).replace('experiments/chelsea.webp','data:image/webp;base64,'+base64.b64encode((ROOT/'experiments/chelsea.webp').read_bytes()).decode()).replace('assets/freecat.svg',icon)
 with sync_playwright() as pw:
     browser=pw.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH') or None,args=['--no-sandbox'])
     for w,h in [(320,720),(390,844),(1440,900)]:
         page=browser.new_page(viewport={'width':w,'height':h},device_scale_factor=1,locale='zh-CN',has_touch=w<600,is_mobile=w<600,reduced_motion='no-preference')
         errors=[]
         page.on('pageerror',lambda e:errors.append(str(e)))
-        page.set_content(html)
-        page.wait_for_function('!!mask && !cv.hidden && box[2]>0 && cv.width>1')
+        page.route('https://**/*',lambda route:route.abort());page.set_content(html)
+        page.wait_for_function('!!mask && selectedCat===PHOTO_CAT && !cv.hidden && box[2]>0 && cv.width>1')
+        page.locator('#nextCat').click();page.wait_for_function('selectedCat===0 && hit(point)');page.evaluate('soundMuted=true')
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
         metrics=page.evaluate('''()=>{
             const old=paintIdle;

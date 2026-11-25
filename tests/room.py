@@ -5,7 +5,7 @@ ROOT=Path(__file__).resolve().parents[1]
 source=Path(os.environ.get('FREECAT_ROOM', ROOT/'room.html')).read_text()
 asset=Path(os.environ.get('FREECAT_PHOTO', ROOT/'experiments/ginger.webp')).read_bytes()
 uri='data:image/webp;base64,'+base64.b64encode(asset).decode()
-html=source.replace('experiments/sleepy-tabby.webp',uri).replace('experiments/ginger.webp',uri)
+html=source.replace('experiments/sleepy-tabby.webp',uri).replace('experiments/ginger.webp',uri).replace('experiments/chelsea.webp','data:image/webp;base64,'+base64.b64encode((ROOT/'experiments/chelsea.webp').read_bytes()).decode()).replace('assets/freecat.svg','data:image/svg+xml;base64,'+base64.b64encode((ROOT/'assets/freecat.svg').read_bytes()).decode())
 assert html!=source
 OUTPUT=os.environ.get('FREECAT_SCREENSHOTS')
 if OUTPUT: Path(OUTPUT).mkdir(parents=True,exist_ok=True)
@@ -15,6 +15,7 @@ with sync_playwright() as p:
   page=b.new_page(viewport={'width':w,'height':h},device_scale_factor=1,locale='zh-CN',reduced_motion='reduce',has_touch=w<600,is_mobile=w<600)
   errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
   page.set_content(html);page.locator('#cat').wait_for(state='visible');page.wait_for_function('!!mask && !cv.hidden && box[2]>0 && box[3]>0 && cv.width>1')
+  page.wait_for_function('selectedCat===PHOTO_CAT && raf===0');page.evaluate('soundMuted=true'); # Explicit silent input fixture; first-touch audio is covered separately.
   if OUTPUT: page.screenshot(path=str(Path(OUTPUT)/f'after-{w}.png'))
   assert page.evaluate('document.documentElement.scrollWidth<=innerWidth');assert page.locator('h1').inner_text()=='来，摸一会儿猫。';assert page.locator('#status').inner_text()=='可以开始抚摸'
   canvas=page.locator('#cat');r=canvas.bounding_box();x,y=page.evaluate('()=>{const r=cv.getBoundingClientRect();return [r.left+r.width*(box[0]+point[0]*box[2]),r.top+r.height*(box[1]+point[1]*box[3])]}')

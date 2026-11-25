@@ -14,7 +14,7 @@ real_ginger=ginger.is_file()
 assert real_ginger or os.environ.get('FREECAT_ALLOW_PORTRAIT_SWITCH_FIXTURE')=='1', 'Missing bundled ginger asset'
 def uri(p,mime):return 'data:'+mime+';base64,'+base64.b64encode(p.read_bytes()).decode()
 def html(s):
-    return s.replace('experiments/sleepy-tabby.webp',uri(portrait,'image/webp')).replace('experiments/ginger.webp',uri(ginger if real_ginger else portrait,'image/webp')).replace('assets/freecat.svg',uri(ROOT/'assets/freecat.svg','image/svg+xml'))
+    return s.replace('experiments/sleepy-tabby.webp',uri(portrait,'image/webp')).replace('experiments/ginger.webp',uri(ginger if real_ginger else portrait,'image/webp')).replace('experiments/chelsea.webp',uri(ROOT/'experiments/chelsea.webp','image/webp')).replace('assets/freecat.svg',uri(ROOT/'assets/freecat.svg','image/svg+xml'))
 def pos(p,xy):return p.evaluate('xy=>{const r=cv.getBoundingClientRect();return {x:r.left+r.width*(box[0]+xy[0]*box[2]),y:r.top+r.height*(box[1]+xy[1]*box[3])}}',xy)
 OUT=os.environ.get('FREECAT_SCREENSHOTS')
 if OUT:Path(OUT).mkdir(parents=True,exist_ok=True)
@@ -23,7 +23,7 @@ with sync_playwright() as pw:
     for w,h in [(1440,900),(390,844),(320,720)]:
         p=b.new_page(viewport={'width':w,'height':h},locale='zh-CN',reduced_motion='reduce',device_scale_factor=1,has_touch=w<600,is_mobile=w<600)
         errors=[];p.on('pageerror',lambda e:errors.append(str(e)))
-        p.set_content(html(source));p.wait_for_function('!!mask && !cv.hidden && box[2]<1');p.wait_for_timeout(100)
+        p.route('https://**/*',lambda route:route.abort());p.set_content(html(source));p.wait_for_function('!!mask && selectedCat===PHOTO_CAT && !cv.hidden');p.locator('#nextCat').click();p.wait_for_function('selectedCat===0 && hit(point)');p.evaluate('soundMuted=true');p.wait_for_timeout(100)
         assert p.evaluate('document.documentElement.scrollWidth<=innerWidth')
         assert p.locator('#status').inner_text()=='可以开始抚摸'
         if OUT:p.screenshot(path=str(Path(OUT)/f'after-{w}.png'))
@@ -56,13 +56,15 @@ with sync_playwright() as pw:
         p.locator('#sound').click();p.wait_for_function("audio && audio.state==='running'");p.locator('#cat').focus();p.keyboard.down('Space');p.wait_for_function('purring');p.keyboard.up('Space');p.wait_for_function('!purring');p.locator('#sound').click()
         p.locator('#night').click();assert p.evaluate("document.body.classList.contains('night')")
         p.locator('#language').click();assert p.locator('h1').inner_text()=='Stay a little.'
-        p.locator('#nextCat').click();p.wait_for_function('selectedCat===1');p.locator('#nextCat').click();p.wait_for_function('selectedCat===0')
+        p.locator('#nextCat').click();p.wait_for_function('selectedCat===1');p.locator('#nextCat').click();p.wait_for_function('selectedCat===PHOTO_CAT');p.locator('#nextCat').click();p.wait_for_function('selectedCat===0')
         p.locator('#file').set_input_files(str(portrait));p.wait_for_function('selectedCat===null');assert p.evaluate('petProfile([.31,.24]).radius===1');assert not errors,errors
         print(json.dumps({'viewport':[w,h],'profiles':profiles,'render':result,'switch_exact_ginger':real_ginger,'errors':errors}))
         p.close()
         if os.environ.get('FREECAT_BASELINE'):
             p=b.new_page(viewport={'width':w,'height':h},locale='zh-CN',reduced_motion='reduce',device_scale_factor=1,has_touch=w<600,is_mobile=w<600)
-            p.set_content(html(Path(os.environ['FREECAT_BASELINE']).read_text()));p.wait_for_function('!!mask && !cv.hidden && box[2]<1');p.wait_for_timeout(100)
+            p.set_content(html(Path(os.environ['FREECAT_BASELINE']).read_text()));p.wait_for_function('!!mask && !cv.hidden && box[2]<1');
+            if p.evaluate('selectedCat!==0'): p.locator('#nextCat').click();p.wait_for_function('selectedCat===0')
+            p.wait_for_timeout(100)
             if OUT:p.screenshot(path=str(Path(OUT)/f'before-{w}.png'))
             r=p.evaluate('''()=>{const w=cv.width,h=cv.height,x=box[0]*w,y=box[1]*h,iw=box[2]*w,ih=box[3]*h,r=Math.min(iw,ih)*.24;paintPatch([.76,.43],[.05,.025],1,x,y,iw,ih,r*1.009);let prev=[patch.width,patch.height].join(),resizes=0;for(let j=0;j<20;j++)for(const q of [[.31,.24],[.76,.43],[.43,.61],[.38,.88]]){paintPatch(q,[.05,.025],1,x,y,iw,ih,r*(1+.009*Math.sin(j/3)));const cur=[patch.width,patch.height].join();if(cur!==prev)resizes++;prev=cur}return {resizes}}''')
             print(json.dumps({'baseline_viewport':[w,h],**r}));p.close()

@@ -5,7 +5,7 @@ from playwright.sync_api import sync_playwright
 root = Path(__file__).resolve().parents[1]
 source = (root / 'index.html').read_text(encoding='utf-8')
 anchor = 'updateLang();rebuild();requestAnimationFrame(frame);'
-probe = '''window.__motion={angles:()=>limbs.map(l=>l.angle),pixels:()=>limbs.reduce((n,l)=>n+l.image.width*l.image.height,0),screen(i,x,y){const l=limbs[i],c=Math.cos(l.angle),s=Math.sin(l.angle),dx=x-l.x,dy=y-l.y;const X=l.x+dx*c-dy*s,Y=l.y+dx*s+dy*c,r=canvas.getBoundingClientRect();return [r.x+tx+X*scale,r.y+ty+Y*scale*breath]},get active(){return petting},get eye(){return eyeOpen}};'''
+probe = '''window.__motion={angles:()=>limbs.map(l=>l.angle),pixels:()=>limbs.reduce((n,l)=>n+l.image.width*l.image.height,0),buffers:()=>limbs.map(l=>({actual:[l.image.width,l.image.height],expected:[l.box[2]*2,l.box[3]*2]})),screen(i,x,y){const l=limbs[i],c=Math.cos(l.angle),s=Math.sin(l.angle),dx=x-l.x,dy=y-l.y;const X=l.x+dx*c-dy*s,Y=l.y+dx*s+dy*c,r=canvas.getBoundingClientRect();return [r.x+tx+X*scale,r.y+ty+Y*scale*breath]},get active(){return petting},get eye(){return eyeOpen}};'''
 assert source.count(anchor)==1
 source=source.replace(anchor,probe+anchor)
 with sync_playwright() as p:
@@ -18,7 +18,12 @@ with sync_playwright() as p:
         page.set_content(source);page.wait_for_timeout(500)
         a=page.evaluate('__motion.angles()');page.wait_for_timeout(600);b=page.evaluate('__motion.angles()')
         assert abs(a[0]-b[0])>0.0001,(a,b)
-        assert page.evaluate('__motion.pixels()')==227200
+        # Ear-root geometry was expanded to prevent gaps. Check actual 2x
+        # buffer sizing and retain a hard total allocation ceiling (250k px).
+        buffers=page.evaluate('__motion.buffers()')
+        assert len(buffers)==3 and all(b['actual']==b['expected'] for b in buffers),buffers
+        pixels=page.evaluate('__motion.pixels()')
+        assert 0<pixels<=250_000,pixels
         for i,x,y in [(0,482,333),(1,218,104),(2,400,104)]:
             page.wait_for_timeout(1400)
             X,Y=page.evaluate(f'__motion.screen({i},{x},{y})')
