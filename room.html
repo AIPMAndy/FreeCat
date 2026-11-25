@@ -5,10 +5,10 @@
 .brand-icon{width:32px;height:32px;display:block;flex:none;border-radius:8px}.controls #nextCat{min-height:44px;white-space:nowrap}.controls #nextCat:hover{background:var(--glow)}
 /* Native disclosure stays in document flow, rather than clipping against the viewport or covering links. */
 .controls summary{gap:8px}.controls summary::after{content:"";width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-2px) rotate(45deg)}.controls details[open] summary::after{transform:translateY(2px) rotate(225deg)}.controls details[open]{flex-basis:100%}.controls details[open] summary{width:max-content;margin:auto}.controls .options{position:static;min-width:0;width:min(100%,340px);margin:8px auto 0;box-shadow:none}.controls .options a{display:flex;align-items:center;min-height:44px}.shell{padding-top:max(clamp(16px,3vw,36px),env(safe-area-inset-top));padding-bottom:max(18px,env(safe-area-inset-bottom));padding-left:max(clamp(16px,4vw,56px),env(safe-area-inset-left));padding-right:max(clamp(16px,4vw,56px),env(safe-area-inset-right))}@media(max-width:600px){.shell{padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom));padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}}
-</style></head>
+</style><style>.media-credit{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;align-items:center;min-height:20px;font-size:10px;color:var(--muted);padding:0 10px;text-align:center}.media-credit a{text-decoration:underline;text-underline-offset:2px}.stage.real-photo:after{display:none}.stage.real-photo img{max-width:638px;height:95%;width:100%;padding:0;border-radius:22px;object-fit:contain;left:50%;top:50%;transform:translate(-50%,-50%)}.controls .options a.purr-credit{display:inline;width:auto;min-height:0;padding:0;border:0;text-decoration:underline;font-size:11px}.stage.real-photo{height:clamp(295px,49svh,510px)}@media(max-width:600px){.stage.real-photo{height:clamp(260px,47svh,385px)}} </style></head>
 <body><main class="shell"><header class="top"><a class="brand" href="room.html" aria-label="FreeCat"><img class="brand-icon" src="assets/freecat.svg" width="32" height="32" alt="" decoding="async">FreeCat</a><div class="top-actions"><button id="night" aria-pressed="false" type="button" data-en="Night" data-zh="夜间">Night</button><button id="language" type="button" aria-label="Switch language">中文</button></div></header>
-<section class="intro"><div class="kicker" data-en="A quiet place for cat lovers" data-zh="猫咪陪伴空间">A quiet place for cat lovers</div><h1 data-en="Stay a little." data-zh="来，摸一会儿猫。">Stay a little.</h1><p data-en="Press and gently stroke. Nothing else to do." data-zh="按住猫咪，轻轻滑动。其他事情先放一放。">Press and gently stroke. Nothing else to do.</p></section>
-<div class="stage portrait"><img id="preview" src="experiments/sleepy-tabby.webp" alt="AI-generated sleeping cat" fetchpriority="high" decoding="async" width="900" height="1200"><canvas id="cat" tabindex="0" role="button" aria-label="Pet the cat: arrows move, space strokes" hidden></canvas></div><div class="caption"><span class="dot" aria-hidden="true"></span><p class="status" id="status" role="status">Loading sample / 正在加载素材…</p></div><noscript><style>.caption,.controls,.top-actions{display:none}</style><p style="text-align:center">Enable JavaScript to pet the cat. / 启用 JavaScript 后即可抚摸猫咪。</p></noscript><div class="controls"><button id="sound" type="button" aria-pressed="false" disabled data-en="Enable purr" data-zh="开启呼噜声">Enable purr</button><button id="nextCat" type="button" data-en="Another cat" data-zh="换只猫">Another cat</button><details id="options"><summary data-en="More" data-zh="更多">More</summary><div class="options"><button id="pick" type="button" data-en="Choose your photo" data-zh="选择本地照片">Choose your photo</button><input id="file" type="file" accept="image/png,image/webp,image/jpeg" hidden><button id="reset" type="button" disabled data-en="Reset movement" data-zh="复位动作">Reset movement</button><button id="defaultCat" type="button" data-en="Original cat" data-zh="恢复默认猫咪">Original cat</button><a href="index.html#pet" data-en="Classic cat · 8 coats" data-zh="经典撸猫 · 8 种毛色">Classic cat · 8 coats</a><small data-en="Photos stay on your device." data-zh="照片只保留在你的设备。">Photos stay on your device.</small></div></details></div>
+<section class="intro"><div class="kicker" data-en="A quiet place for cat lovers" data-zh="猫咪陪伴空间">A quiet place for cat lovers</div><h1 data-en="Stay a little." data-zh="来，摸一会儿猫。">Stay a little.</h1><p data-en="Gently stroke the cat. Sound starts with your first touch." data-zh="轻轻滑动抚摸，首次触摸开启声音。">Gently stroke the cat. Sound starts with your first touch.</p></section>
+<div class="stage real-photo"><img id="preview" src="experiments/chelsea.webp" alt="Chelsea, real cat photograph" fetchpriority="high" decoding="async" width="375" height="300"><canvas id="cat" tabindex="0" role="button" aria-label="Pet the cat: arrows move, space strokes" hidden></canvas></div><div class="caption"><span class="dot" aria-hidden="true"></span><p class="status" id="status" role="status">Loading sample / 正在加载素材…</p></div><div class="media-credit"><span id="photoCredit">Real photograph · Chelsea · Stefan van der Walt</span> <a id="photoSource" href="https://scikit-image.org/docs/0.25.x/api/skimage.data.html#skimage.data.chelsea" target="_blank" rel="noopener noreferrer">CC0 ↗</a></div><noscript><style>.caption,.controls,.top-actions{display:none}</style><p style="text-align:center">Enable JavaScript to pet the cat. / 启用 JavaScript 后即可抚摸猫咪。</p></noscript><div class="controls"><button id="sound" type="button" aria-pressed="false" disabled data-en="Enable purr" data-zh="开启呼噜声">Enable purr</button><button id="nextCat" type="button" data-en="Another cat" data-zh="换只猫">Another cat</button><details id="options"><summary data-en="More" data-zh="更多">More</summary><div class="options"><button id="pick" type="button" data-en="Choose your photo" data-zh="选择本地照片">Choose your photo</button><input id="file" type="file" accept="image/png,image/webp,image/jpeg" hidden><button id="reset" type="button" disabled data-en="Reset movement" data-zh="复位动作">Reset movement</button><button id="defaultCat" type="button" data-en="Original cat" data-zh="恢复默认猫咪">Original cat</button><a href="index.html#pet" data-en="Classic cat · 8 coats" data-zh="经典撸猫 · 8 种毛色">Classic cat · 8 coats</a><small data-en="Photos stay on your device." data-zh="照片只保留在你的设备。">Photos stay on your device.</small><small id="purrKind">Local synthesized purr</small><small><a class="purr-credit" href="https://commons.wikimedia.org/wiki/File:Cat_Purring.ogg" target="_blank" rel="noopener noreferrer">Purr recording: Sgerbic</a> · <a class="purr-credit" href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</a></small></div></details></div>
 <nav class="nav" aria-label="Explore FreeCat"><a href="index.html#discover" data-en="Cat atlas" data-zh="猫咪图鉴">Cat atlas</a><a href="index.html#identify" data-en="Identify" data-zh="猫咪辨认">Identify</a><a href="index.html#collection" data-en="My cats" data-zh="我的猫册">My cats</a><a href="index.html#care" data-en="Cat care" data-zh="养猫攻略">Cat care</a><a href="index.html#play" data-en="Play" data-zh="猫咪乐园">Play</a></nav><footer><span data-en="Free · No login · No ads" data-zh="免费 · 无需登录 · 无广告">Free · No login · No ads</span><span><a href="https://github.com/AIPMAndy/FreeCat" data-en="Open source" data-zh="开源项目">Open source</a> · <a href="https://metaver.vip/">AI 酋长 Andy</a></span></footer></main>
 <script>
 'use strict';
@@ -16,38 +16,57 @@ const $=id=>document.getElementById(id),cv=$('cat'),preview=$('preview'),status=
 const ctx=cv.getContext('2d',{alpha:true}),patch=document.createElement('canvas'),pc=patch.getContext('2d');
 let image=null,mask=null,box=[0,0,1,1],point=[.55,.5],delta=[0,0],target=[0,0],strength=0,pressed=false,raf=0,last=0,visible=true,failed=false,loadId=0,activeId=null;
 const say=s=>{status.dataset.raw=s;roomStatus()};
-const ROOM_CATS=["experiments/sleepy-tabby.webp","experiments/ginger.webp"];let selectedCat=0;
-// Optional synthesized purr, never autoplay. A quiet envelope follows active strokes.
+const ROOM_CATS=["experiments/sleepy-tabby.webp","experiments/ginger.webp","experiments/chelsea.webp"];const PHOTO_CAT=2;let selectedCat=PHOTO_CAT;
+// Audio starts only on an intentional gesture. A local textured synth is the immediate fallback.
 const soundButton=$('sound'),Audio=window.AudioContext||window.webkitAudioContext;
-let audio=null,purrGain=null,purring=false;
+const PURR_RECORDING='https://upload.wikimedia.org/wikipedia/commons/3/38/Cat_Purring.ogg';
+let audio=null,purrGain=null,purring=false,soundMuted=false,previewUntil=0,previewTimer=0,recordingReady=false;
 function syncPurr(){
-  const next=!!(audio&&purrGain&&audio.state==='running'&&pressed&&visible&&!document.hidden&&!failed);
+  const next=!!(audio&&purrGain&&audio.state==='running'&&(pressed||performance.now()<previewUntil)&&visible&&!document.hidden&&!failed);
   if(next===purring)return;purring=next;
-  if(purrGain){const t=audio.currentTime;purrGain.gain.cancelScheduledValues(t);purrGain.gain.setTargetAtTime(next?.045:0,t,.045)}
+  if(purrGain){const t=audio.currentTime;purrGain.gain.cancelScheduledValues(t);purrGain.gain.setTargetAtTime(next?.60:0,t,next?.085:.18)}
 }
+function makePurrBuffer(a){
+  const seconds=4,n=Math.round(a.sampleRate*seconds),b=a.createBuffer(1,n,a.sampleRate),out=b.getChannelData(0);
+  let seed=73129,noise=0;for(let i=0;i<n;i++){
+    seed=(Math.imul(seed,1664525)+1013904223)>>>0;noise=.91*noise+.09*(seed/2147483648-1);
+    const t=i/a.sampleRate,pulse=.55+.45*Math.sin(2*Math.PI*25*t),breath=.80+.20*Math.sin(2*Math.PI*.5*t);
+    const fade=Math.min(1,i/256,(n-1-i)/256);
+    out[i]=fade*breath*pulse*(.11*Math.sin(2*Math.PI*75*t)+.15*Math.sin(2*Math.PI*125*t)+.10*Math.sin(2*Math.PI*175*t)+.045*Math.sin(2*Math.PI*225*t)+.30*noise);
+  }return b;
+}
+function soundCredit(){const el=$('purrKind');if(!el)return;el.textContent=recordingReady?(roomLang==='zh'?'真实呼噜录音（已加载）':'Recorded purr (loaded)'):(roomLang==='zh'?'本地合成呼噜声；实录可用时自动切换':'Local synthesized purr; recording used when available')}
 function disablePurr(){
+  previewUntil=0;clearTimeout(previewTimer);recordingReady=false;
   if(audio){const old=audio;audio=null;purrGain=null;purring=false;old.close().catch(()=>{})}
-  soundButton.setAttribute('aria-pressed','false');
+  soundButton.setAttribute('aria-pressed','false');soundCredit();
 }
-soundButton.disabled=!Audio;
-soundButton.onclick=async()=>{
-  if(audio){disablePurr();return}
-  let a;
+function audition(){previewUntil=performance.now()+850;clearTimeout(previewTimer);previewTimer=setTimeout(()=>{previewUntil=0;syncPurr()},880);syncPurr()}
+async function loadRecording(a,synthetic){
+  try{const response=await fetch(PURR_RECORDING,{credentials:'omit',referrerPolicy:'no-referrer'});if(!response.ok)throw Error('recording');const raw=await response.arrayBuffer();if(raw.byteLength>2000000||audio!==a)return;const b=await a.decodeAudioData(raw);if(audio!==a||!purrGain||b.duration<1||b.duration>90)return;
+    const src=a.createBufferSource(),g=a.createGain();src.buffer=b;src.loop=true;g.gain.value=0;src.connect(g);g.connect(purrGain);src.start();const now=a.currentTime;g.gain.setTargetAtTime(.65,now,.28);synthetic.gain.setTargetAtTime(0,now,.28);recordingReady=true;soundCredit();
+  }catch{/* fallback remains audible; do not imply recording was loaded */}
+}
+function enablePurr(previewSound=false){
+  if(!Audio||failed||soundMuted)return;
+  let a=audio;
   try{
-    a=new Audio();audio=a;
-    const carrier=a.createOscillator(),harmonic=a.createOscillator(),mod=a.createOscillator(),depth=a.createGain(),mix=a.createGain();
-    purrGain=a.createGain();purrGain.gain.value=0;mix.gain.value=.55;depth.gain.value=.22;
-    carrier.type='sine';carrier.frequency.value=54;harmonic.type='triangle';harmonic.frequency.value=81;mod.frequency.value=24;
-    carrier.connect(mix);harmonic.connect(mix);mod.connect(depth);depth.connect(mix.gain);mix.connect(purrGain);purrGain.connect(a.destination);
-    carrier.start();harmonic.start();mod.start();await a.resume();
-    if(audio!==a)return;soundButton.setAttribute('aria-pressed','true');syncPurr();
+    if(!a){a=new Audio();audio=a;const src=a.createBufferSource(),synthetic=a.createGain();src.buffer=makePurrBuffer(a);src.loop=true;synthetic.gain.value=1;purrGain=a.createGain();purrGain.gain.value=0;src.connect(synthetic);synthetic.connect(purrGain);purrGain.connect(a.destination);src.start();
+      a.addEventListener('statechange',()=>{if(audio!==a)return;soundButton.setAttribute('aria-pressed',String(a.state==='running'));syncPurr()});loadRecording(a,synthetic);
+    }
+    if(previewSound)audition();
+    // Call resume synchronously inside the gesture, not after an await or a network request.
+    a.resume().then(()=>{if(audio!==a)return;soundButton.setAttribute('aria-pressed',String(a.state==='running'));syncPurr()}).catch(()=>{if(audio===a){disablePurr();say('Tap sound to try again / 声音启动失败，请点击声音重试')}});
   }catch{if(audio===a)disablePurr();say('Sound unavailable / 当前无法播放声音')}
-};
+}
+function gestureSound(){if(!soundMuted&&Audio){if(!audio)enablePurr(true);else if(audio.state!=='running')enablePurr(false)}}
+soundButton.disabled=!Audio;
+soundButton.onclick=()=>{if(audio&&audio.state==='running'){soundMuted=true;disablePurr();roomSave();return}soundMuted=false;roomSave();enablePurr(true)};
 // Bounded, temporary stroke memory. Coordinates are normalized to the source image.
-const TRAIL_LIMIT=5,TRAIL_LIFE=2200;let trail=[];
+const TRAIL_LIMIT=8,TRAIL_LIFE=1700;let trail=[];
 function remember(p,v,now=performance.now()){
   if(motion.matches||Math.hypot(...v)<.006)return;
-  const near=trail.findIndex(m=>Math.hypot(m.p[0]-p[0],m.p[1]-p[1])<.09);
+  const near=trail.findIndex(m=>Math.hypot(m.p[0]-p[0],m.p[1]-p[1])<.022);
   if(near>=0)trail.splice(near,1);
   trail.push({p:p.slice(),v:v.slice(),time:now});if(trail.length>TRAIL_LIMIT)trail.shift();
 }
@@ -75,9 +94,9 @@ function paintPatch(p,v,amount,x,y,iw,ih,r){
   // Sample the original image, not previously distorted output; clip to its original silhouette.
   pc.drawImage(image,x-px+v[0]*iw*amount,y-py+v[1]*ih*amount,iw,ih);
   pc.globalCompositeOperation='destination-in';pc.drawImage(image,x-px,y-py,iw,ih);
-  const g=pc.createRadialGradient(r,r,0,r,r,r);g.addColorStop(0,'rgba(0,0,0,0.95)');g.addColorStop(.55,'rgba(0,0,0,0.75)');g.addColorStop(1,'transparent');pc.fillStyle=g;pc.fillRect(0,0,size,size);pc.globalCompositeOperation='source-over';ctx.drawImage(patch,0,0,size,size,px,py,size,size);
+  const g=pc.createRadialGradient(r,r,0,r,r,r);g.addColorStop(0,'rgba(0,0,0,0.95)');g.addColorStop(.42,'rgba(0,0,0,0.55)');g.addColorStop(.76,'rgba(0,0,0,0.14)');g.addColorStop(1,'transparent');pc.fillStyle=g;pc.fillRect(0,0,size,size);pc.globalCompositeOperation='source-over';ctx.drawImage(patch,0,0,size,size,px,py,size,size);
 }
-function fit(){if(!image||failed)return;const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;const d=Math.min(devicePixelRatio||1,1.5,Math.sqrt(1200000/(w*h)));const rw=Math.max(1,Math.round(w*d)),rh=Math.max(1,Math.round(h*d));if(cv.width!==rw)cv.width=rw;if(cv.height!==rh)cv.height=rh;const scale=Math.min(w*(w<=600?.99:.94)/image.width,h*.95/image.height),iw=image.width*scale/w,ih=image.height*scale/h;box=[(1-iw)/2,(1-ih)/2,iw,ih];wake()}
+function fit(){if(!image||failed)return;const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;const d=Math.min(devicePixelRatio||1,1.5,Math.sqrt(1200000/(w*h)));const rw=Math.max(1,Math.round(w*d)),rh=Math.max(1,Math.round(h*d));if(cv.width!==rw)cv.width=rw;if(cv.height!==rh)cv.height=rh;const scale=Math.min(w*(w<=600?.99:.94)/image.width,h*.95/image.height,selectedCat===PHOTO_CAT?1.7:Infinity),iw=image.width*scale/w,ih=image.height*scale/h;box=[(1-iw)/2,(1-ih)/2,iw,ih];wake()}
 // Keep the portrait face still during idle breathing; gently shift only the torso texture.
 function paintBreath(t,x,y,iw,ih){if(motion.matches||selectedCat!==0)return;const phase=Math.sin(t/680);paintPatch([.68,.55],[0,phase*.009],.8,x,y,iw,ih,Math.min(iw,ih)*.37)}
 // Brief, pose-specific idle gestures. Blend premultiplied pixels so translucent fur stays soft.
@@ -102,11 +121,11 @@ function paintIdle(t,x,y,iw,ih){
   paintIdleRegion([.30,.045],ear*unit*.024,-ear*unit*.008,x,y,iw,ih,unit*.13);
   paintIdleRegion([.14,.86],tail*unit*.028,-tail*unit*.016,x,y,iw,ih,unit*.20);
 }
-function draw(t){raf=0;if(!image||failed||!visible||document.hidden)return;const dt=last?Math.min(50,t-last):16;last=t;const k=1-Math.exp(-dt/85);syncPurr();strength+=(Number(pressed)-strength)*k;for(let i=0;i<2;i++){delta[i]+=(target[i]-delta[i])*k;target[i]*=Math.exp(-dt/135)}const w=cv.width,h=cv.height,x=box[0]*w,y=box[1]*h,iw=box[2]*w,ih=box[3]*h,b=motion.matches||selectedCat===0?0:Math.sin(t/680)*.009;ctx.clearRect(0,0,w,h);ctx.drawImage(image,x,y-ih*b/2,iw,ih*(1+b));paintBreath(t,x,y,iw,ih);paintIdle(t,x,y,iw,ih);const by=y-ih*b/2,bh=ih*(1+b),r=Math.max(12,Math.min(iw,bh)*.24);trail=motion.matches?[]:trail.filter(m=>t-m.time<TRAIL_LIFE);for(const m of trail){const age=Math.max(0,t-m.time);paintPatch(m.p,m.v,.36*(1-age/TRAIL_LIFE)**2,x,by,iw,bh,r)}paintPatch(point,delta,strength,x,by,iw,bh,r);if(!motion.matches||pressed||strength>.005)wake()}
+function draw(t){raf=0;if(!image||failed||!visible||document.hidden)return;const dt=last?Math.min(50,t-last):16;last=t;const k=1-Math.exp(-dt/85);syncPurr();strength+=(Number(pressed)-strength)*k;for(let i=0;i<2;i++){delta[i]+=(target[i]-delta[i])*k;target[i]*=Math.exp(-dt/135)}const w=cv.width,h=cv.height,x=box[0]*w,y=box[1]*h,iw=box[2]*w,ih=box[3]*h,b=motion.matches||selectedCat===0||selectedCat===PHOTO_CAT?0:Math.sin(t/680)*.009;ctx.clearRect(0,0,w,h);ctx.drawImage(image,x,y-ih*b/2,iw,ih*(1+b));paintBreath(t,x,y,iw,ih);paintIdle(t,x,y,iw,ih);const by=y-ih*b/2,bh=ih*(1+b),r=Math.max(12,Math.min(iw,bh)*.24);trail=motion.matches?[]:trail.filter(m=>t-m.time<TRAIL_LIFE);for(const m of trail){const age=Math.max(0,t-m.time);paintPatch(m.p,m.v,.36*(1-age/TRAIL_LIFE)**2,x,by,iw,bh,r)}paintPatch(point,delta,strength,x,by,iw,bh,r);if(!motion.matches||pressed||strength>.005)wake()}
 function wake(){syncPurr();if(!raf&&image&&!failed&&visible&&!document.hidden)raf=requestAnimationFrame(draw)}
 // Release capture on interruption; never keep purring after the browser loses focus.
 function endGesture(){const id=activeId;activeId=null;pressed=false;target=[0,0];if(id!==null&&cv.hasPointerCapture(id)){try{cv.releasePointerCapture(id)}catch{}}syncPurr()}
-function stop(){trail=[];endGesture();strength=0;delta=[0,0];if(raf)cancelAnimationFrame(raf);raf=0;last=0}
+function stop(){previewUntil=0;clearTimeout(previewTimer);trail=[];endGesture();strength=0;delta=[0,0];if(raf)cancelAnimationFrame(raf);raf=0;last=0}
 function fallback(){failed=true;stop();disablePurr();soundButton.disabled=true;cv.hidden=true;if(image)preview.src=image.toDataURL('image/png');if(image)preview.hidden=false;$('reset').disabled=true;say(image?'Static preview; use Classic cat for interaction. / 静态预览，请使用经典撸猫。':'Choose a photo / 请选择本地图片。')}
 function reset(){trail=[];endGesture();strength=0;delta=[0,0];point=keyboardHome();wake()}
 // Bound both mask dimensions and validate pixels before replacing the current cat.
@@ -117,34 +136,43 @@ function load(src,revoke=false,catIndex=null){
   const fail=()=>{if(id!==loadId)return;if(!image)preview.hidden=true;say(image?'Image could not load; previous cat kept. / 图片无法使用，保留原猫咪。':'Sample unavailable. Choose a local photo. / 素材无法加载，请选择本地图片。')};
   im.onload=()=>{try{
     if(id!==loadId)return;
-    const c=document.createElement('canvas'),ratio=Math.min(1,1600/Math.max(im.naturalWidth,im.naturalHeight));c.width=Math.max(1,Math.round(im.naturalWidth*ratio));c.height=Math.max(1,Math.round(im.naturalHeight*ratio));const cc=c.getContext('2d');if(!cc)throw Error('image context');cc.drawImage(im,0,0,c.width,c.height);const nextMask=makeMask(c);
-    image=c;mask=nextMask;selectedCat=catIndex;cv.parentElement.classList.toggle('portrait',c.height>c.width);
+    const c=document.createElement('canvas'),ratio=Math.min(1,1600/Math.max(im.naturalWidth,im.naturalHeight));c.width=Math.max(1,Math.round(im.naturalWidth*ratio));c.height=Math.max(1,Math.round(im.naturalHeight*ratio));const cc=c.getContext('2d');if(!cc)throw Error('image context');if(catIndex===PHOTO_CAT&&cc.roundRect){cc.beginPath();cc.roundRect(0,0,c.width,c.height,Math.min(c.width,c.height)*.065);cc.clip()}cc.drawImage(im,0,0,c.width,c.height);const nextMask=makeMask(c);
+    image=c;mask=nextMask;selectedCat=catIndex;cv.parentElement.classList.toggle('portrait',c.height>c.width);cv.parentElement.classList.toggle('real-photo',catIndex===PHOTO_CAT);roomPhotoCredit();
     if(failed){fallback();return}cv.hidden=false;preview.hidden=true;$('reset').disabled=false;reset();fit();say('Ready to pet / 可以开始抚摸');
   }catch{fail()}finally{release()}};
   im.onerror=()=>{release();fail()};im.src=src;
 }
 preview.addEventListener('error',()=>{if(!image)preview.hidden=true});
 function uv(e){const r=cv.getBoundingClientRect();return [((e.clientX-r.left)/r.width-box[0])/box[2],((e.clientY-r.top)/r.height-box[1])/box[3]]}
-function hit(p){if(!mask||p.some(v=>v<0||v>=1))return false;return mask.data[(Math.floor(p[1]*mask.h)*mask.w+Math.floor(p[0]*mask.w))*4+3]>64}
+function hit(p){if(!mask||p.some(v=>v<0||v>=1))return false;if(selectedCat===PHOTO_CAT&&p[0]>.91)return false;return mask.data[(Math.floor(p[1]*mask.h)*mask.w+Math.floor(p[0]*mask.w))*4+3]>64}
 // The keyboard starts on a visible part of any loaded photo, not an arbitrary transparent center.
 function keyboardHome(){const center=[.55,.5];if(!mask||hit(center))return center;let best=center,dist=Infinity;for(let y=0;y<mask.h;y++)for(let x=0;x<mask.w;x++){if(mask.data[(y*mask.w+x)*4+3]<=64)continue;const p=[(x+.5)/mask.w,(y+.5)/mask.h],d=(p[0]-center[0])**2+(p[1]-center[1])**2;if(d<dist){best=p;dist=d}}return best}
-function stroke(p){target=[0,1].map(i=>Math.max(-.065,Math.min(.065,(p[i]-point[i])*1.8)));remember(p,target);point=p;wake()}
-cv.addEventListener('pointerdown',e=>{if(activeId!==null||e.button!==0||!hit(uv(e)))return;activeId=e.pointerId;point=uv(e);pressed=true;target=[.008,.018];cv.setPointerCapture(e.pointerId);wake()});cv.addEventListener('pointermove',e=>{if(e.pointerId!==activeId)return;if(e.pointerType==='mouse'&&!(e.buttons&1)){endGesture();wake();return}const p=uv(e);if(hit(p)){if(!pressed){pressed=true;point=p;target=[.008,.018];wake()}else stroke(p)}else if(pressed){pressed=false;target=[0,0];wake()}});for(const n of ['pointerup','pointercancel','lostpointercapture'])cv.addEventListener(n,e=>{if(e.pointerId===activeId){endGesture();wake()}});
-cv.addEventListener('keydown',e=>{if(![' ','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)||activeId!==null)return;e.preventDefault();const step={ArrowLeft:[-.035,0],ArrowRight:[.035,0],ArrowUp:[0,-.035],ArrowDown:[0,.035]}[e.key]||[.012,.012];if(!hit(point))point=keyboardHome();const p=point.map((v,i)=>Math.max(0,Math.min(.999,v+step[i])));if(hit(p)){pressed=true;stroke(p)}else if(e.key===' '&&hit(point)){pressed=true;target=[.008,.018];wake()}});cv.addEventListener('keyup',()=>{if(activeId===null){pressed=false;wake()}});cv.addEventListener('blur',()=>{if(activeId===null){pressed=false;wake()}});
+function stroke(p){
+  const from=point,dx=p[0]-from[0],dy=p[1]-from[1],distance=Math.hypot(dx,dy);
+  if(distance<.0006){point=p;wake();return}
+  const gain=Math.min(1.8,.042/distance),v=[dx*gain,dy*gain],steps=Math.min(8,Math.max(1,Math.ceil(distance/.028)));
+  // Interpolate long pointer events; use a bounded, direction-preserving displacement rather than a jump.
+  for(let i=1;i<=steps;i++){const q=[from[0]+dx*i/steps,from[1]+dy*i/steps];if(hit(q))remember(q,v)}
+  target=v;point=p;wake();
+}
+cv.addEventListener('pointerdown',e=>{if(activeId!==null||e.button!==0||!hit(uv(e)))return;activeId=e.pointerId;point=uv(e);pressed=true;target=[.008,.018];cv.setPointerCapture(e.pointerId);gestureSound();wake()});cv.addEventListener('pointermove',e=>{if(e.pointerId!==activeId)return;if(e.pointerType==='mouse'&&!(e.buttons&1)){endGesture();wake();return}const p=uv(e);if(hit(p)){if(!pressed){pressed=true;point=p;target=[.008,.018];wake()}else stroke(p)}else if(pressed){pressed=false;target=[0,0];wake()}});for(const n of ['pointerup','pointercancel','lostpointercapture'])cv.addEventListener(n,e=>{if(e.pointerId===activeId){endGesture();wake()}});
+cv.addEventListener('keydown',e=>{if(![' ','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)||activeId!==null)return;e.preventDefault();const step={ArrowLeft:[-.035,0],ArrowRight:[.035,0],ArrowUp:[0,-.035],ArrowDown:[0,.035]}[e.key]||[.012,.012];if(!hit(point))point=keyboardHome();const p=point.map((v,i)=>Math.max(0,Math.min(.999,v+step[i])));if(hit(p)){pressed=true;gestureSound();stroke(p)}else if(e.key===' '&&hit(point)){pressed=true;gestureSound();target=[.008,.018];wake()}});cv.addEventListener('keyup',()=>{if(activeId===null){pressed=false;wake()}});cv.addEventListener('blur',()=>{if(activeId===null){pressed=false;wake()}});
 $('pick').onclick=()=>$('file').click();$('file').onchange=e=>{const f=e.target.files[0];if(f){if(f.size>16000000||!['image/png','image/webp','image/jpeg'].includes(f.type))say('Choose PNG, WebP or JPEG under 16 MB. / 请选择 16 MB 以内的图片。');else load(URL.createObjectURL(f),true)}e.target.value=''};$('reset').onclick=reset;
-cv.addEventListener('contextlost',e=>{e.preventDefault();fallback()});document.addEventListener('visibilitychange',()=>document.hidden?stop():wake());window.addEventListener('blur',()=>{endGesture();wake()});window.addEventListener('pagehide',stop);window.addEventListener('pageshow',wake);motion.addEventListener('change',wake);new ResizeObserver(fit).observe(cv.parentElement);new IntersectionObserver(es=>{visible=es[0].isIntersecting;visible?wake():stop()}).observe(cv.parentElement);
+cv.addEventListener('contextlost',e=>{e.preventDefault();fallback()});document.addEventListener('visibilitychange',()=>document.hidden?stop():wake());window.addEventListener('blur',()=>{previewUntil=0;endGesture();wake()});window.addEventListener('pagehide',stop);window.addEventListener('pageshow',wake);motion.addEventListener('change',wake);new ResizeObserver(fit).observe(cv.parentElement);new IntersectionObserver(es=>{visible=es[0].isIntersecting;visible?wake():stop()}).observe(cv.parentElement);
 // Room UI: keep language and theme in a separate key so existing journals and settings are untouched.
 let roomPrefs={};try{roomPrefs=JSON.parse(localStorage.getItem('freecat.room.v1')||'{}')||{}}catch{}
+soundMuted=roomPrefs.muted===true;
 let roomLang=['zh','en'].includes(roomPrefs.lang)?roomPrefs.lang:(navigator.language.toLowerCase().startsWith('zh')?'zh':'en'),roomNight=typeof roomPrefs.night==='boolean'?roomPrefs.night:matchMedia('(prefers-color-scheme:dark)').matches;
-function roomSave(){try{localStorage.setItem('freecat.room.v1',JSON.stringify({lang:roomLang,night:roomNight}))}catch{}}
-function roomRender(){document.documentElement.lang=roomLang==='zh'?'zh-CN':'en';document.body.classList.toggle('night',roomNight);document.querySelector('meta[name=theme-color]').content=roomNight?'#252c28':'#f3ede3';$('night').setAttribute('aria-pressed',String(roomNight));$('night').textContent=roomNight?(roomLang==='zh'?'日间':'Day'):(roomLang==='zh'?'夜间':'Night');$('language').textContent=roomLang==='zh'?'EN':'中文';document.querySelectorAll('[data-en][data-zh]').forEach(el=>{if(el.id!=='night'&&el.id!=='sound')el.textContent=el.dataset[roomLang]});cv.setAttribute('aria-label',roomLang==='zh'?'拖动手指或鼠标摸猫；方向键移动，空格抚摸':'Pet the cat: drag your pointer, arrows move, space strokes');preview.alt=roomLang==='zh'?'猫咪图像（默认素材由 AI 生成）':'Cat image (default AI-generated)';roomStatus();roomSound()}
+function roomSave(){try{localStorage.setItem('freecat.room.v1',JSON.stringify({lang:roomLang,night:roomNight,muted:soundMuted}))}catch{}}
+function roomRender(){document.documentElement.lang=roomLang==='zh'?'zh-CN':'en';document.body.classList.toggle('night',roomNight);document.querySelector('meta[name=theme-color]').content=roomNight?'#252c28':'#f3ede3';$('night').setAttribute('aria-pressed',String(roomNight));$('night').textContent=roomNight?(roomLang==='zh'?'日间':'Day'):(roomLang==='zh'?'夜间':'Night');$('language').textContent=roomLang==='zh'?'EN':'中文';document.querySelectorAll('[data-en][data-zh]').forEach(el=>{if(el.id!=='night'&&el.id!=='sound')el.textContent=el.dataset[roomLang]});cv.setAttribute('aria-label',roomLang==='zh'?'拖动手指或鼠标摸猫；方向键移动，空格抚摸':'Pet the cat: drag your pointer, arrows move, space strokes');roomPhotoCredit();roomStatus();roomSound();soundCredit()}
+function roomPhotoCredit(){const real=selectedCat===PHOTO_CAT,local=selectedCat===null;const label=real?(roomLang==='zh'?'真实摄影 · Chelsea · Stefan van der Walt':'Real photograph · Chelsea · Stefan van der Walt'):local?(roomLang==='zh'?'你的本地照片':'Your local photo'):(roomLang==='zh'?'AI 生成的虚拟猫咪':'AI-generated virtual cat');$('photoCredit').textContent=label;$('photoSource').hidden=!real;preview.alt=label}
 function roomStatus(){const raw=status.dataset.raw||status.textContent;if(!status.dataset.raw)status.dataset.raw=raw;const parts=raw.split(' / ');status.textContent=roomLang==='zh'?(parts[1]||parts[0]):parts[0]}
 function roomSound(){const on=soundButton.getAttribute('aria-pressed')==='true';soundButton.textContent=roomLang==='zh'?(on?'关闭呼噜声':'开启呼噜声'):(on?'Mute purr':'Enable purr')}
-$('language').onclick=()=>{roomLang=roomLang==='zh'?'en':'zh';roomRender();roomSave()};$('night').onclick=()=>{roomNight=!roomNight;roomRender();roomSave()};$('defaultCat').onclick=()=>{load(ROOM_CATS[0],false,0);closeOptions(true)};$('nextCat').onclick=()=>{const next=selectedCat===0?1:0;load(ROOM_CATS[next],false,next)};$('file').addEventListener('change',()=>{closeOptions(true)});$('reset').addEventListener('click',()=>{closeOptions(true)});new MutationObserver(roomSound).observe(soundButton,{attributes:true,attributeFilter:['aria-pressed']});roomRender();
+$('language').onclick=()=>{roomLang=roomLang==='zh'?'en':'zh';roomRender();roomSave()};$('night').onclick=()=>{roomNight=!roomNight;roomRender();roomSave()};$('defaultCat').onclick=()=>{load(ROOM_CATS[PHOTO_CAT],false,PHOTO_CAT);closeOptions(true)};$('nextCat').onclick=()=>{const next=selectedCat===null?PHOTO_CAT:(selectedCat+1)%ROOM_CATS.length;load(ROOM_CATS[next],false,next)};$('file').addEventListener('change',()=>{closeOptions(true)});$('reset').addEventListener('click',()=>{closeOptions(true)});new MutationObserver(roomSound).observe(soundButton,{attributes:true,attributeFilter:['aria-pressed']});roomRender();
 const disclosure=$('options'),summary=disclosure.querySelector('summary');
 function closeOptions(restore=false){disclosure.open=false;if(restore)summary.focus({preventScroll:true})}
 disclosure.addEventListener('toggle',()=>{if(disclosure.open){const first=disclosure.querySelector('.options button');if(first.getBoundingClientRect().bottom>window.innerHeight)first.scrollIntoView({block:'nearest',inline:'nearest'})}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&disclosure.open){e.preventDefault();closeOptions(true)}});
 document.addEventListener('click',e=>{if(disclosure.open&&!disclosure.contains(e.target)){const inside=disclosure.contains(document.activeElement);disclosure.open=false;if(inside&&!(e.target.closest?.('a,button,input,summary,canvas')))summary.focus({preventScroll:true})}});
-if(!ctx||!pc)fallback();load(ROOM_CATS[0],false,0);
+if(!ctx||!pc)fallback();load(ROOM_CATS[PHOTO_CAT],false,PHOTO_CAT);
 </script></body></html>

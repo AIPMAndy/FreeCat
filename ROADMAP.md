@@ -40,3 +40,7 @@ Replace the remaining twelve illustration-only entries with photographs that hav
 ## Round 19 follow-up
 
 19/20 entries have a reviewed photograph source. Prioritize a reliably described Bombay reference rather than a black domestic cat or Bombay mix; then improve full-body/adult and multi-angle coverage, mirror verified licensed files locally, validate actual image requests and Pages on physical devices. Keep the room separate from real photographic atlas references.
+
+## Round 20 priorities
+
+Treat real homepage photography, audible first-touch sound, a unified mark and tactile interaction as P0. Improve the real photo library with verifiable licensed full-body sleeping/top-down images, bundle a verified real recording, test real iOS/Android and deployed root. Keep explicit mute, no pre-gesture autoplay, honest AI labels and original code license. Measure tactile perception, not merely pixel movement.
