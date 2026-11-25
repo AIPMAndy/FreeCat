@@ -15,7 +15,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   room:
-    runs-on: ubuntu-latest
+    # Playwright 1.51 supports Noble, not the rolling Ubuntu 26.04 runner.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -27,11 +28,25 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install playwright==1.51.0
-      - run: python -m playwright install --with-deps ${{ matrix.browser }}
+      - name: Install compatible browser
+        id: browser_install
+        run: python -m playwright install --with-deps ${{ matrix.browser }}
+      - name: Verify browser can launch
+        id: browser_launch
+        run: |
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+              browser = getattr(p, '${{ matrix.browser }}').launch()
+              page = browser.new_page()
+              assert page.evaluate('1+1') == 2
+              print(browser.version)
+              browser.close()
+          PY
       - name: Served origin, exact images and audio signal
         run: python tests/served_room.py ${{ matrix.browser }}
       - name: Existing regression suite
-        if: ${{ always() && matrix.browser == 'chromium' }}
+        if: ${{ !cancelled() && steps.browser_install.outcome == 'success' && steps.browser_launch.outcome == 'success' && matrix.browser == 'chromium' }}
         shell: bash
         run: |
           failed=0
