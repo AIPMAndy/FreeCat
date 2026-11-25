@@ -25,12 +25,12 @@ with sync_playwright() as p:
         assert not requests,'Pet page must not request external photographs'
         page.locator('#worldNav [data-page=discover]').click()
         assert page.locator('#breedGrid article').count()==20
-        assert page.locator('#breedGrid img[data-atlas-image]').count()==8
-        assert page.locator('#breedGrid [data-photo-state=missing]').count()==12
+        assert page.locator('#breedGrid img[data-atlas-image]').count()==19
+        assert page.locator('#breedGrid [data-photo-state=missing]').count()==1
         assert page.locator('#breedGrid svg').count()==0
-        assert '8 有照片来源' in page.locator('#breedCount').inner_text()
+        assert '19 有照片来源' in page.locator('#breedCount').inner_text()
         assert page.locator('#breedGrid img').evaluate_all("els=>els.every(e=>e.loading==='lazy'&&e.referrerPolicy==='no-referrer'&&!!e.alt)")
-        assert page.locator('#breedGrid figcaption').count()==8
+        assert page.locator('#breedGrid figcaption').count()==19
         assert page.locator('#breedGrid figcaption').evaluate_all("els=>els.every(e=>e.querySelector('a[href^=\"https://commons.wikimedia.org/wiki/File:\"]')&&e.querySelector('a[href^=\"https://creativecommons.org/licenses/\"]'))")
         page.locator('#breedSearch').fill('英国短毛猫')
         assert page.locator('#breedGrid article').count()==1
@@ -41,7 +41,7 @@ with sync_playwright() as p:
         page.locator('#breedGrid [data-photo-state=error]').wait_for(timeout=10000)
         assert '无法加载' in page.locator('#breedGrid [data-photo-state=error]').inner_text()
         assert page.locator('#breedGrid figcaption a').count()==2
-        page.locator('#breedSearch').fill('波斯猫')
+        page.locator('#breedSearch').fill('孟买猫')
         assert '待补充' in page.locator('#breedGrid [data-photo-state=missing]').inner_text()
         page.locator('#breedSearch').fill('')
         page.locator('#worldNav [data-page=collection]').click()
@@ -64,6 +64,6 @@ with sync_playwright() as p:
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
         assert all(not ref for _,ref in requests),requests
         assert not errors,errors
-        print(f'PASS {width}x{height}: 20 entries, 8 sourced, 12 missing, loading/error, search, favorites, journal no-photo, identify, language; {len(requests)} intercepted requests',flush=True)
+        print(f'PASS {width}x{height}: 20 entries, 19 sourced, 1 missing, loading/error, search, favorites, journal no-photo, identify, language; {len(requests)} intercepted requests',flush=True)
         page.close()
     browser.close()

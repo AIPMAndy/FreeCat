@@ -36,3 +36,7 @@ Shared brand assets and two original photo-style cats are available in the immer
 ## Round 18 — atlas trust is P0
 
 Replace the remaining twelve illustration-only entries with photographs that have a credible breed description, source/photographer and redistribution-compatible license; independently inspect the image and document source and limitations. No generated images or generic silhouettes as breed references. Prefer bundled optimized local copies with individual licenses and attribution when actual image bytes can be downloaded and verified; do not silently substitute an incorrect photo. Collect multiple representative examples per breed, keep coat pattern separate from pedigree, and test image failure, mobile and language paths. Never use a breed reference as the photo of a user's own cat.
+
+## Round 19 follow-up
+
+19/20 entries have a reviewed photograph source. Prioritize a reliably described Bombay reference rather than a black domestic cat or Bombay mix; then improve full-body/adult and multi-angle coverage, mirror verified licensed files locally, validate actual image requests and Pages on physical devices. Keep the room separate from real photographic atlas references.

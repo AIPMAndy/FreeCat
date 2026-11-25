@@ -89,3 +89,7 @@ The sleeping portrait now has brief independent ear and tail displacement in add
 ### Round 18: photographic atlas, not synthetic breed pictures
 
 Eight of twenty entries now have visually checked Wikimedia Commons photograph references with author, file source and license links. The remaining twelve explicitly have no photograph; the shared illustrative cat silhouette is removed from the atlas. Images use original aspect ratios without cropping; network failure exposes the source rather than substituting another cat. A journal record with no personal photo explicitly says so. Saved reference entries and play link to the source instead of fetching photos automatically outside the atlas. Breed descriptions are educational, not pedigree evidence. Third-party photos retain their original Creative Commons licenses; MIT applies to original software only. See [photo provenance](docs/atlas-photography.md) and [validation scope](docs/iterations/2026-11-25-18.md). Test: `CHROMIUM_PATH=/usr/bin/chromium python tests/atlas_photos.py`.
+
+### Round 19: 19/20 atlas entries have sourced photography
+
+Eleven additional licensed photographic references were visually reviewed and added. Bombay stays explicitly photo-pending because candidates had contradictory breed descriptions or were identified as mixes. All new images remain remotely hosted, not locally bundled. See [updated source register](docs/atlas-photography.md) and [round 19 evidence](docs/iterations/2026-11-25-19.md). No changes to the pet renderer, storage schema, or other features.
