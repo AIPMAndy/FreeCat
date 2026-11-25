@@ -42,9 +42,25 @@ function disablePurr(){
   soundButton.setAttribute('aria-pressed','false');soundCredit();
 }
 function audition(){previewUntil=performance.now()+1400;clearTimeout(previewTimer);previewTimer=setTimeout(()=>{previewUntil=0;syncPurr()},1430);syncPurr()}
+// Reject effectively silent recordings; match their level without clipping or unbounded amplification.
+function recordingLevel(buffer){
+  let square=0,peak=0,count=0;
+  for(let channel=0;channel<buffer.numberOfChannels;channel++){
+    const samples=buffer.getChannelData(channel);
+    for(let i=0;i<samples.length;i++){
+      const v=samples[i];if(!Number.isFinite(v))return null;
+      square+=v*v;peak=Math.max(peak,Math.abs(v));count++;
+    }
+  }
+  if(!count||peak<=0)return null;
+  const rms=Math.sqrt(square/count);
+  if(rms<.003)return null;
+  const gain=Math.min(4,.085/rms,.7/peak);
+  return rms*gain>=.025?gain:null;
+}
 async function loadRecording(a,synthetic){
-  try{const response=await fetch(PURR_RECORDING,{credentials:'omit',referrerPolicy:'no-referrer'});if(!response.ok)throw Error('recording');const raw=await response.arrayBuffer();if(raw.byteLength>2000000||audio!==a)return;const b=await a.decodeAudioData(raw);if(audio!==a||!purrGain||b.duration<1||b.duration>90)return;
-    const src=a.createBufferSource(),g=a.createGain();src.buffer=b;src.loop=true;g.gain.value=0;src.connect(g);g.connect(purrGain);src.start();const now=a.currentTime;g.gain.setTargetAtTime(.65,now,.28);synthetic.gain.setTargetAtTime(0,now,.28);recordingReady=true;soundCredit();
+  try{const response=await fetch(PURR_RECORDING,{credentials:'omit',referrerPolicy:'no-referrer'});if(!response.ok)throw Error('recording');const raw=await response.arrayBuffer();if(raw.byteLength>2000000||audio!==a)return;const b=await a.decodeAudioData(raw);if(audio!==a||!purrGain||b.duration<1||b.duration>90)return;const level=recordingLevel(b);if(level===null)return;
+    const src=a.createBufferSource(),g=a.createGain();src.buffer=b;src.loop=true;g.gain.value=0;src.connect(g);g.connect(purrGain);src.start();const now=a.currentTime;g.gain.setTargetAtTime(level,now,.28);synthetic.gain.setTargetAtTime(0,now,.28);recordingReady=true;soundCredit();
   }catch{/* fallback remains audible; do not imply recording was loaded */}
 }
 function enablePurr(previewSound=false){
