@@ -1,0 +1,51 @@
+name: FreeCat room regression
+on:
+  pull_request:
+    paths:
+      - 'room.html'
+      - 'index.html'
+      - 'assets/**'
+      - 'experiments/**'
+      - 'tests/**'
+      - '.github/workflows/room-regression.yml'
+permissions:
+  contents: read
+concurrency:
+  group: room-regression-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  room:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install playwright==1.51.0
+      - run: python -m playwright install --with-deps ${{ matrix.browser }}
+      - name: Served origin, exact images and audio signal
+        run: python tests/served_room.py ${{ matrix.browser }}
+      - name: Existing regression suite
+        if: ${{ always() && matrix.browser == 'chromium' }}
+        shell: bash
+        run: |
+          failed=0
+          for test in smoke atlas_photos room room_disclosure room_real_photo brand_and_cats region_pet room_firstpaint room_reentry idle_gestures photo_lab face_geometry limb_motion pet_reactions photo_purr photo_trail render_lifecycle; do
+            echo "::group::$test"
+            mkdir -p "test-screens/$test"
+            FREECAT_SCREENSHOTS="test-screens/$test" python "tests/$test.py" || failed=1
+            echo "::endgroup::"
+          done
+          exit "$failed"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: room-screens-${{ matrix.browser }}
+          path: test-screens/
+          if-no-files-found: ignore
+          retention-days: 7
