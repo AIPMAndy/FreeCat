@@ -4,7 +4,8 @@ import json, base64, os
 ROOT=Path(__file__).resolve().parents[1]
 source=Path(os.environ.get('FREECAT_ROOM', ROOT/'room.html')).read_text()
 asset=Path(os.environ.get('FREECAT_PHOTO', ROOT/'experiments/ginger.webp')).read_bytes()
-html=source.replace("'experiments/ginger.webp'", repr('data:image/webp;base64,'+base64.b64encode(asset).decode()))
+uri='data:image/webp;base64,'+base64.b64encode(asset).decode()
+html=source.replace('experiments/sleepy-tabby.webp',uri).replace('experiments/ginger.webp',uri)
 assert html!=source
 OUTPUT=os.environ.get('FREECAT_SCREENSHOTS')
 if OUTPUT: Path(OUTPUT).mkdir(parents=True,exist_ok=True)

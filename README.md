@@ -62,4 +62,10 @@ Regression: `CHROMIUM_PATH=/usr/bin/chromium python tests/room.py` (or use Playw
 
 ### Portrait cat (round 12)
 
-The immersive room now opens with the original AI-generated sleepy longhair tabby (`experiments/sleepy-tabby.webp`). The landscape ginger remains available in [Photo Lab](experiments/photo-pet.html). The room's source is identical to the previously tested portrait preview except that its embedded image is a relative, same-origin WebP asset. Public deployment and device Safari tests remain unverified.
+The immersive room now opens with the original AI-generated sleepy longhair tabby (`experiments/sleepy-tabby.webp`). The landscape ginger is also available through the room’s Another cat button and in [Photo Lab](experiments/photo-pet.html). The room's source is identical to the previously tested portrait preview except that its embedded image is a relative, same-origin WebP asset. Public deployment and device Safari tests remain unverified.
+
+### Shared brand and two-cat room (round 13)
+
+The room now includes an **Another cat / 换只猫** button. It switches between the two existing original AI-generated WebP cats; only the current image is loaded, and switching back from a local photo restores the portrait cat. The interactive renderer, keyboard input, optional purr and local-first design remain unchanged. The two pictures are AI-generated illustrations with photographic realism, not photographs of actual animals.
+
+The classic app, room and Photo Lab use a shared original SVG mark, a 32×32 PNG favicon, a full-bleed 180×180 Apple touch icon, and a 1200×630 JPEG social preview. The social image references the expected GitHub Pages path. Public deployment must still be checked. The new `tests/brand_and_cats.py` and the updated `tests/room.py` and `tests/room_reentry.py` exercise the room with local assets in memory.

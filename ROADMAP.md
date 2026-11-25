@@ -28,3 +28,7 @@ P3: opt-in community cat cards and contributions with moderation, consent, repor
 ## Current priority
 
 After restoring the standalone baseline, redesign the original cat silhouette, anatomy, fur shading and responsive pet reactions. Benchmark frame time on mobile before attempting a 3D migration; restore offline support and validate live Pages separately.
+
+## Round 13 handoff
+
+Shared brand assets and two original photo-style cats are available in the immersive room. Next prioritize anatomy-specific touch response, natural fur deformation, more clearly distinct original or appropriately licensed cat assets, and actual iOS/Android/public Pages checks. Do not claim a generated cat is a real photograph. Test the social preview against a real crawler before declaring it deployed.

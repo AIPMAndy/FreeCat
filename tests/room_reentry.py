@@ -3,13 +3,13 @@ from playwright.sync_api import sync_playwright
 import base64, json, os
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE=(ROOT/'room.html').read_text()
-ASSETS=[('ginger',ROOT/'experiments/ginger.webp')]
-if os.environ.get('FREECAT_PORTRAIT'): ASSETS.append(('portrait',Path(os.environ['FREECAT_PORTRAIT'])))
+ASSETS=[('ginger',ROOT/'experiments/ginger.webp'),('portrait',Path(os.environ.get('FREECAT_PORTRAIT', ROOT/'experiments/sleepy-tabby.webp')))]
 OUTPUT=os.environ.get('FREECAT_SCREENSHOTS')
 if OUTPUT: Path(OUTPUT).mkdir(parents=True,exist_ok=True)
 
 def html(source, asset):
- return source.replace("'experiments/ginger.webp'",repr('data:image/webp;base64,'+base64.b64encode(asset.read_bytes()).decode()))
+ uri='data:image/webp;base64,'+base64.b64encode(asset.read_bytes()).decode()
+ return source.replace('experiments/sleepy-tabby.webp',uri).replace('experiments/ginger.webp',uri)
 def coords(page,p):
  return page.evaluate('p=>{const r=cv.getBoundingClientRect();return {x:r.left+r.width*(box[0]+p[0]*box[2]),y:r.top+r.height*(box[1]+p[1]*box[3])}}',p)
 with sync_playwright() as pw:
