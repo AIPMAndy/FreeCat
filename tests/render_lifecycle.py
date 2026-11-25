@@ -28,10 +28,15 @@ with sync_playwright() as p:
         assert not page.evaluate('__life.active()')
         time0=page.evaluate('__life.clock()')
         page.locator('#worldNav [data-page=pet]').click();page.wait_for_timeout(350);resumed=count();assert resumed>0 and page.evaluate('__life.clock()')==time0,(w,resumed)
-        page.evaluate('''()=>{let el=document.createElement('div');el.id='test-spacer';el.style.height='200vh';document.body.append(el);window.scrollTo(0,document.body.scrollHeight)}''');page.wait_for_timeout(250)
-        assert page.evaluate('document.querySelector("#stage").getBoundingClientRect().bottom<=0')
+        page.evaluate('''()=>{let el=document.createElement('div');el.id='test-spacer';el.style.height='200vh';document.body.append(el);window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'})}''')
+        # The page has smooth scrolling; explicitly reach the target before
+        # checking the offscreen render lifecycle rather than racing a timer.
+        page.wait_for_function('document.querySelector("#stage").getBoundingClientRect().bottom<=0')
+        page.wait_for_timeout(250)
         offscreen=count();assert offscreen==0,(w,offscreen)
-        page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(350);back=count();assert back>0
+        page.evaluate("window.scrollTo({top:0,behavior:'instant'})")
+        page.wait_for_function('document.querySelector("#stage").getBoundingClientRect().bottom>0 && document.querySelector("#stage").getBoundingClientRect().top<innerHeight')
+        page.wait_for_timeout(350);back=count();assert back>0
         r=page.locator('#cat').bounding_box();tx,ty,scale,breath=page.evaluate('__life.point()');X,Y=r['x']+tx+310*scale,r['y']+ty+150*scale*breath
         if w<500:page.touchscreen.tap(X,Y)
         else:page.mouse.click(X,Y)
