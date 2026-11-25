@@ -81,3 +81,7 @@ The room now displays the original AI-generated portrait before interactive rend
 ### Round 16: small-screen controls and interruption-safe petting
 
 More settings now expand within the document rather than covering navigation; Escape restores the disclosure focus, and outside clicks close it. Touch-safe padding and pointer capture cleanup reduce interruption problems. Run `python tests/room_disclosure.py` with Playwright and Chromium. See [round 16 verification](docs/iterations/2026-11-25-16.md) for fixture scope and outstanding deployment checks.
+
+### Round 17: portrait micro-gestures
+
+The sleeping portrait now has brief independent ear and tail displacement in addition to torso breathing. These subtle 2D alpha-blended movements are limited to the hand-mapped portrait, fade during petting, and are disabled under reduced motion. Same-size canvas fitting no longer clears the frame. Run `python tests/idle_gestures.py`; see [round 17 evidence](docs/iterations/2026-11-25-17.md). Browser tests use in-memory assets; public deployment remains unverified.
