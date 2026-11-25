@@ -59,3 +59,7 @@ Run `python -m pip install playwright`, then `python -m playwright install chrom
 [Enter the immersive cat room](room.html). The classic homepage now has a prominent link to this separately accessible, bilingual photo experience. It reuses the original ginger WebP and the tested round-10 Canvas interaction engine, with optional synthesized purr, day/night mode, a local-photo option and direct links to all five other modules. No additional runtime dependencies or external API. The classic experience remains the default until real served-origin and mobile-device verification can be completed.
 
 Regression: `CHROMIUM_PATH=/usr/bin/chromium python tests/room.py` (or use Playwright's Chromium). The test injects the bundled asset as a data URI and checks the rendered room, not network deployment.
+
+### Portrait cat (round 12)
+
+The immersive room now opens with the original AI-generated sleepy longhair tabby (`experiments/sleepy-tabby.webp`). The landscape ginger remains available in [Photo Lab](experiments/photo-pet.html). The room's source is identical to the previously tested portrait preview except that its embedded image is a relative, same-origin WebP asset. Public deployment and device Safari tests remain unverified.
