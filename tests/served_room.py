@@ -48,16 +48,22 @@ try:
             else:
                 page.mouse.click(x,y)
             page.wait_for_function("audio && audio.state==='running' && purrGain.gain.value>.005")
-            # Hold an actual keyboard gesture while sampling the output signal, not just the gain control.
-            page.locator("#cat").focus()
-            page.keyboard.down("Space")
-            rms=page.evaluate("""async()=>{const a=audio.createAnalyser();a.fftSize=2048;
+            # Measure the first tap alone, before any second activating gesture.
+            # In the old gate, the keyboard could conceal a failed initial audition.
+            assert page.evaluate("!pressed && previewUntil > performance.now()")
+            signal_js = """async()=>{const a=audio.createAnalyser();a.fftSize=2048;
                 const silent=audio.createGain();silent.gain.value=0;
                 purrGain.connect(a);a.connect(silent);silent.connect(audio.destination);
                 await new Promise(r=>setTimeout(r,250));
                 const buf=new Float32Array(a.fftSize);a.getFloatTimeDomainData(buf);
                 const rms=Math.sqrt(buf.reduce((s,v)=>s+v*v,0)/buf.length);
-                purrGain.disconnect(a);a.disconnect();silent.disconnect();return rms}""")
+                purrGain.disconnect(a);a.disconnect();silent.disconnect();return rms}"""
+            first_tap_rms = page.evaluate(signal_js)
+            assert first_tap_rms > 0.0005, ("first tap alone", ENGINE, w, first_tap_rms)
+            page.wait_for_function("!purring && previewUntil===0")
+            page.locator("#cat").focus()
+            page.keyboard.down("Space")
+            rms = page.evaluate(signal_js)
             assert rms>0.0005, rms
             page.screenshot(path=str(OUT/f"{ENGINE}-{w}-active.png"))
             page.keyboard.up("Space")
@@ -79,7 +85,7 @@ try:
             page.locator("#language").click()
             assert "Real photograph" in page.locator("#photoCredit").inner_text()
             assert not errors and not missing, (errors,missing)
-            print(ENGINE, w, "actual browser signal RMS", rms, "pass", flush=True)
+            print(ENGINE, w, "first tap RMS", first_tap_rms, "keyboard RMS", rms, "pass", flush=True)
             context.close()
         browser.close()
 finally:
