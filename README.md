@@ -53,3 +53,9 @@ Run `python -m pip install playwright`, then `python -m playwright install chrom
 ## Photo Lab (experimental)
 
 [Open the photo renderer](experiments/photo-pet.html) from the same static web server. The original AI-generated ginger tabby (`experiments/ginger.webp`, 326,594 bytes) is bundled locally and is loaded automatically by the existing renderer; no photo upload or external API is required. The classic homepage remains the default. This experiment implements breathing and directional image displacement, not individual fur physics. Run `python tests/photo_lab.py` with Playwright/Chromium to exercise the renderer using the bundled sample. See [asset provenance and validation](docs/iterations/2026-11-25-09.md).
+
+## FreeCat Room · redesigned photo experience
+
+[Enter the immersive cat room](room.html). The classic homepage now has a prominent link to this separately accessible, bilingual photo experience. It reuses the original ginger WebP and the tested round-10 Canvas interaction engine, with optional synthesized purr, day/night mode, a local-photo option and direct links to all five other modules. No additional runtime dependencies or external API. The classic experience remains the default until real served-origin and mobile-device verification can be completed.
+
+Regression: `CHROMIUM_PATH=/usr/bin/chromium python tests/room.py` (or use Playwright's Chromium). The test injects the bundled asset as a data URI and checks the rendered room, not network deployment.
