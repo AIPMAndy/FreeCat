@@ -20,7 +20,7 @@ const ROOM_CATS=["experiments/sleepy-tabby.webp","experiments/ginger.webp","expe
 // Audio starts only on an intentional gesture. A local textured synth is the immediate fallback.
 const soundButton=$('sound'),Audio=window.AudioContext||window.webkitAudioContext;
 const PURR_RECORDING='https://upload.wikimedia.org/wikipedia/commons/3/38/Cat_Purring.ogg';
-let audio=null,purrGain=null,purring=false,soundMuted=false,previewUntil=0,previewTimer=0,recordingReady=false;
+let audio=null,purrGain=null,purring=false,soundMuted=false,previewUntil=0,previewTimer=0,previewRequest=0,recordingReady=false;
 function syncPurr(){
   const next=!!(audio&&purrGain&&audio.state==='running'&&(pressed||performance.now()<previewUntil)&&visible&&!document.hidden&&!failed);
   if(next===purring)return;purring=next;
@@ -37,11 +37,11 @@ function makePurrBuffer(a){
 }
 function soundCredit(){const el=$('purrKind');if(!el)return;el.textContent=recordingReady?(roomLang==='zh'?'真实呼噜录音（已加载）':'Recorded purr (loaded)'):(roomLang==='zh'?'本地合成呼噜声；实录可用时自动切换':'Local synthesized purr; recording used when available')}
 function disablePurr(){
-  previewUntil=0;clearTimeout(previewTimer);recordingReady=false;
+  previewRequest++;previewUntil=0;clearTimeout(previewTimer);recordingReady=false;
   if(audio){const old=audio;audio=null;purrGain=null;purring=false;old.close().catch(()=>{})}
   soundButton.setAttribute('aria-pressed','false');soundCredit();
 }
-function audition(){previewUntil=performance.now()+850;clearTimeout(previewTimer);previewTimer=setTimeout(()=>{previewUntil=0;syncPurr()},880);syncPurr()}
+function audition(){previewUntil=performance.now()+1400;clearTimeout(previewTimer);previewTimer=setTimeout(()=>{previewUntil=0;syncPurr()},1430);syncPurr()}
 async function loadRecording(a,synthetic){
   try{const response=await fetch(PURR_RECORDING,{credentials:'omit',referrerPolicy:'no-referrer'});if(!response.ok)throw Error('recording');const raw=await response.arrayBuffer();if(raw.byteLength>2000000||audio!==a)return;const b=await a.decodeAudioData(raw);if(audio!==a||!purrGain||b.duration<1||b.duration>90)return;
     const src=a.createBufferSource(),g=a.createGain();src.buffer=b;src.loop=true;g.gain.value=0;src.connect(g);g.connect(purrGain);src.start();const now=a.currentTime;g.gain.setTargetAtTime(.65,now,.28);synthetic.gain.setTargetAtTime(0,now,.28);recordingReady=true;soundCredit();
@@ -49,17 +49,18 @@ async function loadRecording(a,synthetic){
 }
 function enablePurr(previewSound=false){
   if(!Audio||failed||soundMuted)return;
-  let a=audio;
+  let a=audio;const request=previewSound?++previewRequest:0;let auditioned=false;
+  const playPreview=()=>{if(!auditioned&&request&&request===previewRequest&&audio===a&&a.state==='running'&&!soundMuted&&!document.hidden&&visible&&!failed){auditioned=true;audition()}};
   try{
     if(!a){a=new Audio();audio=a;const src=a.createBufferSource(),synthetic=a.createGain();src.buffer=makePurrBuffer(a);src.loop=true;synthetic.gain.value=1;purrGain=a.createGain();purrGain.gain.value=0;src.connect(synthetic);synthetic.connect(purrGain);purrGain.connect(a.destination);src.start();
       a.addEventListener('statechange',()=>{if(audio!==a)return;soundButton.setAttribute('aria-pressed',String(a.state==='running'));syncPurr()});loadRecording(a,synthetic);
     }
-    if(previewSound)audition();
+    playPreview();
     // Call resume synchronously inside the gesture, not after an await or a network request.
-    a.resume().then(()=>{if(audio!==a)return;soundButton.setAttribute('aria-pressed',String(a.state==='running'));syncPurr()}).catch(()=>{if(audio===a){disablePurr();say('Tap sound to try again / 声音启动失败，请点击声音重试')}});
+    a.resume().then(()=>{if(audio!==a)return;soundButton.setAttribute('aria-pressed',String(a.state==='running'));playPreview();syncPurr()}).catch(()=>{if(audio===a){disablePurr();say('Tap sound to try again / 声音启动失败，请点击声音重试')}});
   }catch{if(audio===a)disablePurr();say('Sound unavailable / 当前无法播放声音')}
 }
-function gestureSound(){if(!soundMuted&&Audio){if(!audio)enablePurr(true);else if(audio.state!=='running')enablePurr(false)}}
+function gestureSound(){if(!soundMuted&&Audio){if(!audio)enablePurr(true);else if(audio.state!=='running')enablePurr(true)}}
 soundButton.disabled=!Audio;
 soundButton.onclick=()=>{if(audio&&audio.state==='running'){soundMuted=true;disablePurr();roomSave();return}soundMuted=false;roomSave();enablePurr(true)};
 // Bounded, temporary stroke memory. Coordinates are normalized to the source image.
@@ -137,7 +138,7 @@ function needsFrame(){return (!motion.matches&&selectedCat!==PHOTO_CAT)||pressed
 function wake(){syncPurr();if(!raf&&image&&!failed&&visible&&!document.hidden)raf=requestAnimationFrame(draw)}
 // Release capture on interruption; never keep purring after the browser loses focus.
 function endGesture(){const id=activeId;activeId=null;pressed=false;target=[0,0];if(id!==null&&cv.hasPointerCapture(id)){try{cv.releasePointerCapture(id)}catch{}}syncPurr()}
-function stop(){previewUntil=0;clearTimeout(previewTimer);trail=[];endGesture();strength=0;delta=[0,0];if(raf)cancelAnimationFrame(raf);raf=0;last=0}
+function stop(){previewRequest++;previewUntil=0;clearTimeout(previewTimer);trail=[];endGesture();strength=0;delta=[0,0];if(raf)cancelAnimationFrame(raf);raf=0;last=0}
 function fallback(){failed=true;stop();disablePurr();soundButton.disabled=true;cv.hidden=true;if(image)preview.src=image.toDataURL('image/png');if(image)preview.hidden=false;$('reset').disabled=true;say(image?'Static preview; use Classic cat for interaction. / 静态预览，请使用经典撸猫。':'Choose a photo / 请选择本地图片。')}
 function reset(){trail=[];endGesture();strength=0;delta=[0,0];point=keyboardHome();wake()}
 // Bound both mask dimensions and validate pixels before replacing the current cat.
@@ -167,10 +168,12 @@ function stroke(p){
   for(let i=1;i<=steps;i++){const q=[from[0]+dx*i/steps,from[1]+dy*i/steps];if(hit(q))remember(q,v)}
   target=v;point=p;wake();
 }
-cv.addEventListener('pointerdown',e=>{if(activeId!==null||e.button!==0||!hit(uv(e)))return;activeId=e.pointerId;point=uv(e);pressed=true;target=[.008,.018];cv.setPointerCapture(e.pointerId);gestureSound();wake()});cv.addEventListener('pointermove',e=>{if(e.pointerId!==activeId)return;if(e.pointerType==='mouse'&&!(e.buttons&1)){endGesture();wake();return}const p=uv(e);if(hit(p)){if(!pressed){pressed=true;point=p;target=[.008,.018];wake()}else stroke(p)}else if(pressed){pressed=false;target=[0,0];wake()}});for(const n of ['pointerup','pointercancel','lostpointercapture'])cv.addEventListener(n,e=>{if(e.pointerId===activeId){endGesture();wake()}});
+cv.addEventListener('pointerdown',e=>{if(activeId!==null||e.button!==0||!hit(uv(e)))return;activeId=e.pointerId;point=uv(e);pressed=true;target=[.008,.018];cv.setPointerCapture(e.pointerId);if(e.pointerType==='mouse')gestureSound();wake()});cv.addEventListener('pointermove',e=>{if(e.pointerId!==activeId)return;if(e.pointerType==='mouse'&&!(e.buttons&1)){endGesture();wake();return}const p=uv(e);if(hit(p)){if(!pressed){pressed=true;point=p;target=[.008,.018];wake()}else stroke(p)}else if(pressed){pressed=false;target=[0,0];wake()}});for(const n of ['pointerup','pointercancel','lostpointercapture'])cv.addEventListener(n,e=>{if(e.pointerId===activeId){const unlock=n==='pointerup'&&e.pointerType!=='mouse'&&pressed&&!soundMuted&&(!audio||audio.state!=='running');endGesture();if(unlock)gestureSound();wake()}});
+// Touch releases carry user activation; a trusted click also retries if WebKit deferred resume.
+cv.addEventListener('click',e=>{if(e.isTrusted&&e.detail>0&&hit(uv(e))&&!soundMuted&&(!audio||audio.state!=='running'))gestureSound()});
 cv.addEventListener('keydown',e=>{if(![' ','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)||activeId!==null)return;e.preventDefault();const step={ArrowLeft:[-.035,0],ArrowRight:[.035,0],ArrowUp:[0,-.035],ArrowDown:[0,.035]}[e.key]||[.012,.012];if(!hit(point))point=keyboardHome();const p=point.map((v,i)=>Math.max(0,Math.min(.999,v+step[i])));if(hit(p)){pressed=true;gestureSound();stroke(p)}else if(e.key===' '&&hit(point)){pressed=true;gestureSound();target=[.008,.018];wake()}});cv.addEventListener('keyup',()=>{if(activeId===null){pressed=false;wake()}});cv.addEventListener('blur',()=>{if(activeId===null){pressed=false;wake()}});
 $('pick').onclick=()=>$('file').click();$('file').onchange=e=>{const f=e.target.files[0];if(f){if(f.size>16000000||!['image/png','image/webp','image/jpeg'].includes(f.type))say('Choose PNG, WebP or JPEG under 16 MB. / 请选择 16 MB 以内的图片。');else load(URL.createObjectURL(f),true)}e.target.value=''};$('reset').onclick=reset;
-cv.addEventListener('contextlost',e=>{e.preventDefault();fallback()});document.addEventListener('visibilitychange',()=>document.hidden?stop():wake());window.addEventListener('blur',()=>{previewUntil=0;endGesture();wake()});window.addEventListener('pagehide',stop);window.addEventListener('pageshow',wake);motion.addEventListener('change',wake);new ResizeObserver(fit).observe(cv.parentElement);new IntersectionObserver(es=>{visible=es[0].isIntersecting;visible?wake():stop()}).observe(cv.parentElement);
+cv.addEventListener('contextlost',e=>{e.preventDefault();fallback()});document.addEventListener('visibilitychange',()=>document.hidden?stop():wake());window.addEventListener('blur',()=>{previewRequest++;previewUntil=0;endGesture();wake()});window.addEventListener('pagehide',stop);window.addEventListener('pageshow',wake);motion.addEventListener('change',wake);new ResizeObserver(fit).observe(cv.parentElement);new IntersectionObserver(es=>{visible=es[0].isIntersecting;visible?wake():stop()}).observe(cv.parentElement);
 // Room UI: keep language and theme in a separate key so existing journals and settings are untouched.
 let roomPrefs={};try{roomPrefs=JSON.parse(localStorage.getItem('freecat.room.v1')||'{}')||{}}catch{}
 soundMuted=roomPrefs.muted===true;
