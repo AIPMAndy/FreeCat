@@ -28,20 +28,6 @@ jobs:
       - name: Fetch exact licensed source and validate MP3
         run: |
           python scripts/acquire_purr.py --out verified-purr
-      # Temporary handoff for the already public CC BY-SA recording only. Never print other files or credentials.
-      - name: Handoff exact public MP3 bytes for repository bundling
-        if: ${{ github.event_name == 'pull_request' && github.head_ref == 'freecat/round-30-recording' }}
-        run: |
-          python - <<'PY'
-          import base64, hashlib
-          from pathlib import Path
-          raw = Path("verified-purr/ariadne.mp3").read_bytes()
-          assert len(raw) == 105837, "Unexpected MP3 size"
-          assert hashlib.sha256(raw).hexdigest() == "81a70e312dc1166cb22b8558202729cbefdcee5dfd6895badf4c80d13c440ae4", "Unexpected MP3 checksum"
-          encoded = base64.b64encode(raw).decode("ascii")
-          for i in range(0, len(encoded), 2048):
-              print(f"FC_PUBLIC_MP3 {i//2048:04d} {encoded[i:i+2048]}")
-          PY
       - uses: actions/upload-artifact@v4
         with:
           name: verified-ariadne-purr
