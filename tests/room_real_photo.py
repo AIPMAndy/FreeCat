@@ -17,7 +17,22 @@ with sync_playwright() as pw:
         page=b.new_page(viewport={'width':w,'height':h},locale='zh-CN',device_scale_factor=1,has_touch=w<600,is_mobile=w<600,reduced_motion='no-preference')
         errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         page.set_content(html);page.wait_for_function('!!mask&&selectedCat===PHOTO_CAT&&cv.width>1')
+        page.wait_for_function('raf===0')
         assert page.evaluate('image.width===375&&image.height===300&&audio===null&&!purring')
+        # Sample the exact bundled image. The core eye/nose regions must not move,
+        # while cheek/forehead texture still responds to a bounded stroke.
+        protected=page.evaluate('''()=>{
+            const w=cv.width,h=cv.height,x=box[0]*w,y=box[1]*h,iw=box[2]*w,ih=box[3]*h,r=Math.min(iw,ih)*.24;
+            const baseline=()=>{ctx.clearRect(0,0,w,h);ctx.drawImage(image,x,y,iw,ih);return ctx.getImageData(0,0,w,h).data};
+            const a=baseline(),regions=[[.38,.385,.13,.15],[.78,.445,.11,.15],[.65,.81,.12,.11]],result=[];
+            for(const p of [[.38,.385],[.78,.445],[.65,.81],[.19,.63],[.52,.15]]){
+                baseline();paintPatch(p,[.042,.012],1,x,y,iw,ih,r);const b=ctx.getImageData(0,0,w,h).data;let changed=0,core=0;
+                for(let j=0;j<h;j++)for(let i=0;i<w;i++){const k=(j*w+i)*4;if(Math.max(...[0,1,2,3].map(c=>Math.abs(a[k+c]-b[k+c])))<=2)continue;changed++;const u=(i+.5-x)/iw,v=(j+.5-y)/ih;if(regions.some(([cx,cy,sx,sy])=>Math.hypot((u-cx)/sx,(v-cy)/sy)<.60))core++}
+                result.push({changed,core});
+            }baseline();return result;
+        }''')
+        assert all(p['core']==0 for p in protected),protected
+        assert all(p['changed']>50 for p in protected[-2:]),protected
         assert '真实摄影' in page.locator('#photoCredit').inner_text()
         assert page.locator('#photoSource').is_visible()
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
@@ -31,6 +46,8 @@ with sync_playwright() as pw:
         assert page.evaluate('Math.hypot(...target)<=.042001&&trail.length<=8&&trail.length>=2')
         assert before!=page.evaluate('cv.toDataURL()')
         page.mouse.up();page.wait_for_function('!purring&&purrGain.gain.value<.02',timeout=4000)
+        page.wait_for_function('raf===0&&trail.length===0',timeout=4000)
+        still=page.evaluate('cv.toDataURL()');page.wait_for_timeout(250);assert page.evaluate('raf===0') and still==page.evaluate('cv.toDataURL()')
         page.locator('#sound').click();assert page.evaluate('audio===null&&soundMuted')
         page.mouse.move(x,y);page.mouse.down();page.mouse.up();page.wait_for_timeout(180)
         assert page.evaluate('audio===null')
@@ -42,5 +59,5 @@ with sync_playwright() as pw:
         assert '真实摄影' in page.locator('#photoCredit').inner_text()
         page.locator('#language').click();assert 'Real photograph' in page.locator('#photoCredit').inner_text()
         assert not errors,errors
-        print(f'{w}: photo, sound fallback, stroke, mute, switch, translation, layout; {levels}',flush=True);page.close()
+        print(f'{w}: photo, sound fallback, stroke, mute, switch, translation, layout; {levels}; face protection {protected}',flush=True);page.close()
     b.close()
