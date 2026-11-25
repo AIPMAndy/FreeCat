@@ -73,3 +73,7 @@ The classic app, room and Photo Lab use a shared original SVG mark, a 32×32 PNG
 ### Region-aware petting (round 14)
 
 The immersive room varies local stroke radius and strength across hand-authored regions for each bundled pose; uploaded images keep the generic renderer. Scratch-buffer reuse avoids repeated dimension changes as breathing and stroke regions change. This is localized 2D image displacement, not individual fur physics or recognition. Run `python tests/region_pet.py` with both bundled assets; see [validation and limitations](docs/iterations/2026-11-25-14.md).
+
+### Round 15: visible first cat and quieter breathing
+
+The room now displays the original AI-generated portrait before interactive rendering is ready, keeps the face still during its localized idle torso motion, and validates bounded image masks before replacing the active cat. Run `python tests/room_firstpaint.py` with Playwright/Chromium. This is an in-memory renderer test; see [round 15 evidence](docs/iterations/2026-11-25-15.md) for scope and unverified deployment.
