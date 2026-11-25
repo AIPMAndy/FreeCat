@@ -10,16 +10,34 @@ const $=id=>document.getElementById(id),cv=$('cat'),preview=$('preview'),status=
 const ctx=cv.getContext('2d',{alpha:true}),patch=document.createElement('canvas'),pc=patch.getContext('2d');
 let image=null,mask=null,box=[0,0,1,1],point=[.55,.5],delta=[0,0],target=[0,0],strength=0,pressed=false,raf=0,last=0,visible=true,failed=false,loadId=0,activeId=null;
 const say=s=>status.textContent=s;
+// Bounded, temporary stroke memory. Coordinates are normalized to the source image.
+const TRAIL_LIMIT=5,TRAIL_LIFE=2200;let trail=[];
+function remember(p,v,now=performance.now()){
+  if(motion.matches||Math.hypot(...v)<.006)return;
+  const near=trail.findIndex(m=>Math.hypot(m.p[0]-p[0],m.p[1]-p[1])<.09);
+  if(near>=0)trail.splice(near,1);
+  trail.push({p:p.slice(),v:v.slice(),time:now});if(trail.length>TRAIL_LIMIT)trail.shift();
+}
+function paintPatch(p,v,amount,x,y,iw,ih,r){
+  if(amount<=.005)return;
+  const size=Math.ceil(r*2),px=x+p[0]*iw-r,py=y+p[1]*ih-r;
+  if(patch.width!==size||patch.height!==size){patch.width=size;patch.height=size}
+  pc.clearRect(0,0,size,size);
+  // Sample the original image, not previously distorted output; clip to its original silhouette.
+  pc.drawImage(image,x-px+v[0]*iw*amount,y-py+v[1]*ih*amount,iw,ih);
+  pc.globalCompositeOperation='destination-in';pc.drawImage(image,x-px,y-py,iw,ih);
+  const g=pc.createRadialGradient(r,r,0,r,r,r);g.addColorStop(0,'rgba(0,0,0,0.95)');g.addColorStop(.55,'rgba(0,0,0,0.75)');g.addColorStop(1,'transparent');pc.fillStyle=g;pc.fillRect(0,0,size,size);pc.globalCompositeOperation='source-over';ctx.drawImage(patch,px,py);
+}
 function fit(){if(!image||failed)return;const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;const d=Math.min(devicePixelRatio||1,1.5,Math.sqrt(1200000/(w*h)));cv.width=Math.max(1,Math.round(w*d));cv.height=Math.max(1,Math.round(h*d));const scale=Math.min(w*.90/image.width,h*.86/image.height),iw=image.width*scale/w,ih=image.height*scale/h;box=[(1-iw)/2,(1-ih)/2,iw,ih];wake()}
-function draw(t){raf=0;if(!image||failed||!visible||document.hidden)return;const dt=last?Math.min(50,t-last):16;last=t;const k=1-Math.exp(-dt/85);strength+=(Number(pressed)-strength)*k;for(let i=0;i<2;i++){delta[i]+=(target[i]-delta[i])*k;target[i]*=Math.exp(-dt/135)}const w=cv.width,h=cv.height,x=box[0]*w,y=box[1]*h,iw=box[2]*w,ih=box[3]*h,b=motion.matches?0:Math.sin(t/680)*.009;ctx.clearRect(0,0,w,h);ctx.drawImage(image,x,y-ih*b/2,iw,ih*(1+b));if(strength>.005){const r=Math.max(12,Math.min(iw,ih)*.24),size=Math.ceil(r*2),px=x+point[0]*iw-r,py=y+point[1]*ih-r;if(patch.width!==size||patch.height!==size){patch.width=size;patch.height=size}pc.clearRect(0,0,size,size);const dx=delta[0]*iw*strength,dy=delta[1]*ih*strength;pc.drawImage(cv,px-dx,py-dy,size,size,0,0,size,size);pc.globalCompositeOperation='destination-in';const g=pc.createRadialGradient(r,r,0,r,r,r);g.addColorStop(0,'rgba(0,0,0,0.95)');g.addColorStop(.55,'rgba(0,0,0,0.75)');g.addColorStop(1,'transparent');pc.fillStyle=g;pc.fillRect(0,0,size,size);pc.globalCompositeOperation='source-over';ctx.drawImage(patch,px,py)}if(!motion.matches||pressed||strength>.005)wake()}
+function draw(t){raf=0;if(!image||failed||!visible||document.hidden)return;const dt=last?Math.min(50,t-last):16;last=t;const k=1-Math.exp(-dt/85);strength+=(Number(pressed)-strength)*k;for(let i=0;i<2;i++){delta[i]+=(target[i]-delta[i])*k;target[i]*=Math.exp(-dt/135)}const w=cv.width,h=cv.height,x=box[0]*w,y=box[1]*h,iw=box[2]*w,ih=box[3]*h,b=motion.matches?0:Math.sin(t/680)*.009;ctx.clearRect(0,0,w,h);ctx.drawImage(image,x,y-ih*b/2,iw,ih*(1+b));const by=y-ih*b/2,bh=ih*(1+b),r=Math.max(12,Math.min(iw,bh)*.24);trail=motion.matches?[]:trail.filter(m=>t-m.time<TRAIL_LIFE);for(const m of trail){const age=Math.max(0,t-m.time);paintPatch(m.p,m.v,.36*(1-age/TRAIL_LIFE)**2,x,by,iw,bh,r)}paintPatch(point,delta,strength,x,by,iw,bh,r);if(!motion.matches||pressed||strength>.005)wake()}
 function wake(){if(!raf&&image&&!failed&&visible&&!document.hidden)raf=requestAnimationFrame(draw)}
-function stop(){pressed=false;activeId=null;if(raf)cancelAnimationFrame(raf);raf=0;last=0}
+function stop(){trail=[];pressed=false;activeId=null;if(raf)cancelAnimationFrame(raf);raf=0;last=0}
 function fallback(){failed=true;stop();cv.hidden=true;preview.hidden=!image;$('reset').disabled=true;say(image?'Static preview; use Classic cat for interaction. / 静态预览，请使用经典撸猫。':'Choose a photo / 请选择本地图片。')}
-function reset(){pressed=false;activeId=null;strength=0;delta=[0,0];target=[0,0];point=[.55,.5];wake()}
+function reset(){trail=[];pressed=false;activeId=null;strength=0;delta=[0,0];target=[0,0];point=[.55,.5];wake()}
 function load(src,revoke=false){const id=++loadId,im=new Image();im.onload=()=>{if(id!==loadId){if(revoke)URL.revokeObjectURL(src);return}const c=document.createElement('canvas');const ratio=Math.min(1,1600/Math.max(im.naturalWidth,im.naturalHeight));c.width=Math.max(1,Math.round(im.naturalWidth*ratio));c.height=Math.max(1,Math.round(im.naturalHeight*ratio));const ctx=c.getContext('2d');ctx.drawImage(im,0,0,c.width,c.height);image=c;const m=document.createElement('canvas');m.width=256;m.height=Math.max(1,Math.round(256*c.height/c.width));const mc=m.getContext('2d',{willReadFrequently:true});mc.drawImage(c,0,0,m.width,m.height);mask={data:mc.getImageData(0,0,m.width,m.height).data,w:m.width,h:m.height};preview.src=c.toDataURL('image/png');if(revoke)URL.revokeObjectURL(src);if(failed){fallback();return}cv.hidden=false;preview.hidden=true;$('reset').disabled=false;reset();fit();say('Ready to pet / 可以开始抚摸')};im.onerror=()=>{if(revoke)URL.revokeObjectURL(src);if(id===loadId)say(image?'Photo could not load; previous cat kept. / 加载失败，保留原图。':'Sample unavailable. Choose a local photo. / 素材未附带，请选择本地图片。')};im.src=src}
 function uv(e){const r=cv.getBoundingClientRect();return [((e.clientX-r.left)/r.width-box[0])/box[2],((e.clientY-r.top)/r.height-box[1])/box[3]]}
 function hit(p){if(!mask||p.some(v=>v<0||v>=1))return false;return mask.data[(Math.floor(p[1]*mask.h)*mask.w+Math.floor(p[0]*mask.w))*4+3]>64}
-function stroke(p){target=[0,1].map(i=>Math.max(-.065,Math.min(.065,(p[i]-point[i])*1.8)));point=p;wake()}
+function stroke(p){target=[0,1].map(i=>Math.max(-.065,Math.min(.065,(p[i]-point[i])*1.8)));remember(p,target);point=p;wake()}
 cv.addEventListener('pointerdown',e=>{if(activeId!==null||!hit(uv(e)))return;activeId=e.pointerId;point=uv(e);pressed=true;target=[.008,.018];cv.setPointerCapture(e.pointerId);wake()});cv.addEventListener('pointermove',e=>{if(e.pointerId===activeId&&pressed){const p=uv(e);if(hit(p))stroke(p);else{pressed=false;activeId=null;wake()}}});for(const n of ['pointerup','pointercancel','lostpointercapture'])cv.addEventListener(n,e=>{if(e.pointerId===activeId){pressed=false;activeId=null;wake()}});
 cv.addEventListener('keydown',e=>{if(![' ','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)||activeId!==null)return;e.preventDefault();const step={ArrowLeft:[-.035,0],ArrowRight:[.035,0],ArrowUp:[0,-.035],ArrowDown:[0,.035]}[e.key]||[.012,.012];const p=point.map((v,i)=>Math.max(.05,Math.min(.95,v+step[i])));if(hit(p)){pressed=true;stroke(p)}});cv.addEventListener('keyup',()=>{if(activeId===null){pressed=false;wake()}});cv.addEventListener('blur',()=>{if(activeId===null){pressed=false;wake()}});
 $('pick').onclick=()=>$('file').click();$('file').onchange=e=>{const f=e.target.files[0];if(f){if(f.size>16000000||!['image/png','image/webp','image/jpeg'].includes(f.type))say('Choose PNG, WebP or JPEG under 16 MB. / 请选择 16 MB 以内的图片。');else load(URL.createObjectURL(f),true)}e.target.value=''};$('reset').onclick=reset;
