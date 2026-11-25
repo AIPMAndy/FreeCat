@@ -77,3 +77,7 @@ The immersive room varies local stroke radius and strength across hand-authored 
 ### Round 15: visible first cat and quieter breathing
 
 The room now displays the original AI-generated portrait before interactive rendering is ready, keeps the face still during its localized idle torso motion, and validates bounded image masks before replacing the active cat. Run `python tests/room_firstpaint.py` with Playwright/Chromium. This is an in-memory renderer test; see [round 15 evidence](docs/iterations/2026-11-25-15.md) for scope and unverified deployment.
+
+### Round 16: small-screen controls and interruption-safe petting
+
+More settings now expand within the document rather than covering navigation; Escape restores the disclosure focus, and outside clicks close it. Touch-safe padding and pointer capture cleanup reduce interruption problems. Run `python tests/room_disclosure.py` with Playwright and Chromium. See [round 16 verification](docs/iterations/2026-11-25-16.md) for fixture scope and outstanding deployment checks.
