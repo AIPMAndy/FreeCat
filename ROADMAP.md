@@ -32,3 +32,7 @@ After restoring the standalone baseline, redesign the original cat silhouette, a
 ## Round 13 handoff
 
 Shared brand assets and two original photo-style cats are available in the immersive room. Next prioritize anatomy-specific touch response, natural fur deformation, more clearly distinct original or appropriately licensed cat assets, and actual iOS/Android/public Pages checks. Do not claim a generated cat is a real photograph. Test the social preview against a real crawler before declaring it deployed.
+
+## Round 18 — atlas trust is P0
+
+Replace the remaining twelve illustration-only entries with photographs that have a credible breed description, source/photographer and redistribution-compatible license; independently inspect the image and document source and limitations. No generated images or generic silhouettes as breed references. Prefer bundled optimized local copies with individual licenses and attribution when actual image bytes can be downloaded and verified; do not silently substitute an incorrect photo. Collect multiple representative examples per breed, keep coat pattern separate from pedigree, and test image failure, mobile and language paths. Never use a breed reference as the photo of a user's own cat.

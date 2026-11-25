@@ -5,7 +5,7 @@
 ## What's included (v0.2.1)
 
 - Pet: original procedural Canvas 2D cat and fur, eight coats, size, optional synthesized purr, keyboard and pointer interaction, themes, daily local companionship time.
-- Atlas: 19 named breeds plus domestic cats of unknown pedigree; bilingual descriptions, search, coat filter, original illustrative art and favorites. This is a starter atlas, not a complete global breed registry.
+- Atlas: 19 named breeds plus domestic cats of unknown pedigree; bilingual descriptions, search, coat filter, credited photographic references where available and favorites. This is a starter atlas, not a complete global breed registry.
 - Identify: manual coat/pattern/face/ear trait matcher with optional local photo preview. It is NOT an AI image classifier, veterinary diagnosis, or pedigree test.
 - Journal: local favorite breeds and up to 50 real cat profiles, optional compressed photos, notes, removal confirmation, JSON export. No device sync or import yet.
 - Care: twelve educational topics, seven-item adoption readiness checklist, editable cost planner and emergency guidance. Reference links are included. Not a substitute for veterinary advice; content has not been independently reviewed by a veterinarian.
@@ -34,7 +34,7 @@ Open http://localhost:8000. Storage and audio behavior can vary by browser, espe
 
 ## Privacy & welfare
 
-No backend, tracking code, or external assets are necessary for normal use. External reference/brand links are voluntary navigation. A host may keep its own access logs. Photos are read on-device; journal photos are compressed to JPEG before storage. Local storage is best-effort and may be cleared by the browser; exported JSON contains personal cat records and should be kept safely. The budget planner is an estimate, not a market price database. Never use appearance matching to assert pedigree. Do not use this app for urgent or individualized animal medical decisions.
+No backend or tracking code is required. The pet room, trait matching, journal and care remain local-first. Opening the atlas loads public reference photographs from Wikimedia image servers on demand, with lazy loading and no referrer. Wikimedia receives normal image-request network metadata; local photos and journal entries are not transmitted. External reference/brand links are voluntary navigation. A host may keep its own access logs. Photos are read on-device; journal photos are compressed to JPEG before storage. Local storage is best-effort and may be cleared by the browser; exported JSON contains personal cat records and should be kept safely. The budget planner is an estimate, not a market price database. Never use appearance matching to assert pedigree. Do not use this app for urgent or individualized animal medical decisions.
 
 ## Contribute
 
@@ -85,3 +85,7 @@ More settings now expand within the document rather than covering navigation; Es
 ### Round 17: portrait micro-gestures
 
 The sleeping portrait now has brief independent ear and tail displacement in addition to torso breathing. These subtle 2D alpha-blended movements are limited to the hand-mapped portrait, fade during petting, and are disabled under reduced motion. Same-size canvas fitting no longer clears the frame. Run `python tests/idle_gestures.py`; see [round 17 evidence](docs/iterations/2026-11-25-17.md). Browser tests use in-memory assets; public deployment remains unverified.
+
+### Round 18: photographic atlas, not synthetic breed pictures
+
+Eight of twenty entries now have visually checked Wikimedia Commons photograph references with author, file source and license links. The remaining twelve explicitly have no photograph; the shared illustrative cat silhouette is removed from the atlas. Images use original aspect ratios without cropping; network failure exposes the source rather than substituting another cat. A journal record with no personal photo explicitly says so. Saved reference entries and play link to the source instead of fetching photos automatically outside the atlas. Breed descriptions are educational, not pedigree evidence. Third-party photos retain their original Creative Commons licenses; MIT applies to original software only. See [photo provenance](docs/atlas-photography.md) and [validation scope](docs/iterations/2026-11-25-18.md). Test: `CHROMIUM_PATH=/usr/bin/chromium python tests/atlas_photos.py`.
