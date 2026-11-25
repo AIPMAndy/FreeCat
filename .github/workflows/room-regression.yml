@@ -43,6 +43,8 @@ jobs:
               print(browser.version)
               browser.close()
           PY
+      - name: Mocked delayed audio activation regression
+        run: node tests/purr-activation.test.cjs
       - name: Served origin, exact images and audio signal
         run: python tests/served_room.py ${{ matrix.browser }}
       - name: Existing regression suite
