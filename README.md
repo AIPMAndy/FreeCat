@@ -69,3 +69,7 @@ The immersive room now opens with the original AI-generated sleepy longhair tabb
 The room now includes an **Another cat / 换只猫** button. It switches between the two existing original AI-generated WebP cats; only the current image is loaded, and switching back from a local photo restores the portrait cat. The interactive renderer, keyboard input, optional purr and local-first design remain unchanged. The two pictures are AI-generated illustrations with photographic realism, not photographs of actual animals.
 
 The classic app, room and Photo Lab use a shared original SVG mark, a 32×32 PNG favicon, a full-bleed 180×180 Apple touch icon, and a 1200×630 JPEG social preview. The social image references the expected GitHub Pages path. Public deployment must still be checked. The new `tests/brand_and_cats.py` and the updated `tests/room.py` and `tests/room_reentry.py` exercise the room with local assets in memory.
+
+### Region-aware petting (round 14)
+
+The immersive room varies local stroke radius and strength across hand-authored regions for each bundled pose; uploaded images keep the generic renderer. Scratch-buffer reuse avoids repeated dimension changes as breathing and stroke regions change. This is localized 2D image displacement, not individual fur physics or recognition. Run `python tests/region_pet.py` with both bundled assets; see [validation and limitations](docs/iterations/2026-11-25-14.md).

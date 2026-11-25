@@ -14,11 +14,11 @@ with sync_playwright() as p:
  for w,h in [(1440,900),(390,844),(320,720)]:
   page=b.new_page(viewport={'width':w,'height':h},device_scale_factor=1,locale='zh-CN',reduced_motion='reduce',has_touch=w<600,is_mobile=w<600)
   errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-  page.set_content(html);page.locator('#cat').wait_for(state='visible');page.wait_for_function('!!mask && box[2]>.5')
+  page.set_content(html);page.locator('#cat').wait_for(state='visible');page.wait_for_function('!!mask && !cv.hidden && box[2]>0 && box[3]>0 && cv.width>1')
   if OUTPUT: page.screenshot(path=str(Path(OUTPUT)/f'after-{w}.png'))
   assert page.evaluate('document.documentElement.scrollWidth<=innerWidth');assert page.locator('h1').inner_text()=='来，摸一会儿猫。';assert page.locator('#status').inner_text()=='可以开始抚摸'
-  canvas=page.locator('#cat');r=canvas.bounding_box();x,y=r['x']+r['width']*.55,r['y']+r['height']*.5
-  assert page.evaluate('hit([.55,.5])')
+  canvas=page.locator('#cat');r=canvas.bounding_box();x,y=page.evaluate('()=>{const r=cv.getBoundingClientRect();return [r.left+r.width*(box[0]+point[0]*box[2]),r.top+r.height*(box[1]+point[1]*box[3])]}')
+  assert page.evaluate('hit(point)')
   before=page.evaluate('cv.toDataURL()');page.mouse.move(x,y);page.mouse.down();page.mouse.move(x+16,y+5,steps=4);page.wait_for_timeout(120);assert page.evaluate('pressed && strength>.2');assert before!=page.evaluate('cv.toDataURL()');page.mouse.up()
   canvas.focus();page.keyboard.down('Space');page.wait_for_function('pressed');page.keyboard.up('Space');page.wait_for_function('!pressed')
   if w==390:
