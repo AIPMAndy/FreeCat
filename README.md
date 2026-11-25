@@ -49,3 +49,7 @@ By AI 酋长 Andy · 星觉科技 — https://metaver.vip/
 ## Validation
 
 Run `python -m pip install playwright`, then `python -m playwright install chromium` and `python tests/smoke.py` (or set `CHROMIUM_PATH` to a system Chromium). The script uses in-memory HTML and does not prove storage persistence or hosting behavior. See [iteration log](docs/iterations/2026-11-25-01.md).
+
+## Photo Lab (experimental)
+
+[Open the photo renderer](experiments/photo-pet.html) from the same static web server. The original AI-generated ginger tabby (`experiments/ginger.webp`, 326,594 bytes) is bundled locally and is loaded automatically by the existing renderer; no photo upload or external API is required. The classic homepage remains the default. This experiment implements breathing and directional image displacement, not individual fur physics. Run `python tests/photo_lab.py` with Playwright/Chromium to exercise the renderer using the bundled sample. See [asset provenance and validation](docs/iterations/2026-11-25-09.md).
