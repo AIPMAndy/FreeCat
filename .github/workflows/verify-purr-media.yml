@@ -10,7 +10,7 @@ permissions:
 jobs:
   acquire:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -18,9 +18,15 @@ jobs:
           python-version: '3.12'
       - name: Offline source validation checks
         run: python scripts/acquire_purr.py --self-test
+      - name: Ensure FFmpeg is available
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends ffmpeg
+          fi
+          ffmpeg -version
       - name: Fetch exact licensed source and validate MP3
         run: |
-          ffmpeg -version
           python scripts/acquire_purr.py --out verified-purr
       - uses: actions/upload-artifact@v4
         with:
