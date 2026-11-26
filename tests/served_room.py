@@ -1,9 +1,10 @@
 """Real HTTP origin smoke test; uses exact checked-in media, not data URIs.
 Run: python tests/served_room.py chromium (or webkit).
-External recording is intentionally blocked; this tests synthesized fallback,
-not the original recording, hardware speakers, physical devices or public Pages.
+External requests are blocked. Verify the exact local recording, first-tap signal,
+then the recorded path; this does not test physical speakers or public Pages.
 """
 import functools
+import hashlib
 import os
 import sys
 import threading
@@ -12,6 +13,7 @@ from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
+assert hashlib.sha256((ROOT / 'assets/ariadne-purr.mp3').read_bytes()).hexdigest() == '81a70e312dc1166cb22b8558202729cbefdcee5dfd6895badf4c80d13c440ae4'
 ENGINE = sys.argv[1] if len(sys.argv) > 1 else "chromium"
 OUT = Path(os.environ.get("FREECAT_SCREENSHOTS", "test-screens"))
 OUT.mkdir(parents=True, exist_ok=True)
@@ -27,7 +29,8 @@ try:
                                           has_touch=w<600, is_mobile=w<600, device_scale_factor=1)
             context.route("https://**/*", lambda route: route.abort())
             page = context.new_page()
-            errors, missing = [], []
+            errors, missing, media_requests = [], [], []
+            page.on('request', lambda r: media_requests.append(r.url) if 'ariadne-purr.mp3' in r.url else None)
             page.on("pageerror", lambda e: errors.append(str(e)))
             page.on("response", lambda r: missing.append(r.url) if r.url.startswith(origin) and r.status >= 400 else None)
             page.goto(origin + "/")
@@ -35,6 +38,7 @@ try:
             page.wait_for_function("!!mask && selectedCat===PHOTO_CAT && !cv.hidden && raf===0")
             assert page.evaluate("image.width===375 && image.height===300 && audio===null && !purring")
             assert page.evaluate("document.documentElement.scrollWidth<=innerWidth")
+            assert not media_requests, 'no pre-gesture audio fetch'
             assert "真实摄影" in page.locator("#photoCredit").inner_text()
             assert page.locator(".brand-icon").evaluate("e=>e.complete && e.naturalWidth>0")
             for path in ["assets/favicon-32.png", "assets/apple-touch-icon.png", "assets/social-card.jpg"]:
@@ -61,6 +65,9 @@ try:
             first_tap_rms = page.evaluate(signal_js)
             assert first_tap_rms > 0.0005, ("first tap alone", ENGINE, w, first_tap_rms)
             page.wait_for_function("!purring && previewUntil===0")
+            page.wait_for_function('recordingReady', timeout=8000)
+            assert media_requests == [origin + '/assets/ariadne-purr.mp3'], media_requests
+            assert '真实呼噜录音' in page.locator('#purrKind').text_content()
             page.locator("#cat").focus()
             page.keyboard.down("Space")
             rms = page.evaluate(signal_js)
@@ -85,7 +92,7 @@ try:
             page.locator("#language").click()
             assert "Real photograph" in page.locator("#photoCredit").inner_text()
             assert not errors and not missing, (errors,missing)
-            print(ENGINE, w, "first tap RMS", first_tap_rms, "keyboard RMS", rms, "pass", flush=True)
+            print(ENGINE, w, "first tap RMS", first_tap_rms, "recorded keyboard RMS", rms, "pass", flush=True)
             context.close()
         browser.close()
 finally:
