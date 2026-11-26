@@ -21,12 +21,15 @@ def verify(data, size, digest, dimensions):
     if len(data) != size or hashlib.sha1(data).hexdigest() != digest:
         raise ValueError("Source size or checksum mismatch")
     with Image.open(io.BytesIO(data)) as im:
-        if im.format != "JPEG" or im.size != dimensions:
+        if im.format != "JPEG" or im.size not in (dimensions, dimensions[::-1]):
             raise ValueError("Unexpected source image format or size")
         im.verify()
     with Image.open(io.BytesIO(data)) as im:
         im.load()
-        return ImageOps.exif_transpose(im).convert("RGB")
+        oriented = ImageOps.exif_transpose(im)
+        if oriented.size != dimensions:
+            raise ValueError("Unexpected oriented source dimensions")
+        return oriented.convert("RGB")
 
 def optimize(im):
     im.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
