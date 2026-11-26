@@ -34,5 +34,19 @@ with sync_playwright() as p:
   assert page.evaluate('active===null && raf===0')
   assert not errors,errors
   print(engine,size,'held pointer gap/reentry/idle OK')
-  page.emulate_media(reduced_motion='reduce');assert page.evaluate('motion.matches');assert page.evaluate('''() => {base();const before=ctx.getImageData(0,0,960,960).data;start([.57,.49],123);vx=5;force=1;paint();const after=ctx.getImageData(0,0,960,960).data;end();return before.every((v,i)=>v===after[i])}''');print(size,result,'mouse keyboard reduced motion idle OK');page.close()
+  # WebKit can apply media overrides asynchronously; wait for the actual query.
+  page.emulate_media(reduced_motion='reduce')
+  page.wait_for_function('motion.matches')
+  assert page.evaluate('''() => {base();const before=ctx.getImageData(0,0,960,960).data;start([.57,.49],123);vx=5;force=1;paint();const after=ctx.getImageData(0,0,960,960).data;end();return before.every((v,i)=>v===after[i])}''')
+  assert page.evaluate('start([.57,.49],123) && raf===0')
+  page.wait_for_timeout(150)
+  assert page.evaluate('active===123 && raf===0')
+  page.emulate_media(reduced_motion='no-preference')
+  page.wait_for_function('!motion.matches')
+  page.wait_for_function('force>0')
+  page.evaluate('end()')
+  page.wait_for_function('raf===0')
+  assert not errors,errors
+  print(engine,size,result,'mouse keyboard reduced motion idle and restore OK')
+  page.close()
  b.close()
