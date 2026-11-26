@@ -49,4 +49,53 @@ with sync_playwright() as p:
   assert not errors,errors
   print(engine,size,result,'mouse keyboard reduced motion idle and restore OK')
   page.close()
+
+ # Actual same-origin recording regression. Do not treat an injected data URL
+ # as evidence of real audio delivery or browser user-activation behavior.
+ from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+ from functools import partial
+ from threading import Thread
+ server=ThreadingHTTPServer(('127.0.0.1',0),partial(SimpleHTTPRequestHandler,directory=str(root.parent.parent)))
+ Thread(target=server.serve_forever,daemon=True).start()
+ try:
+  page=b.new_page(viewport={'width':390,'height':844},has_touch=True)
+  requests=[]; errors=[]
+  page.on('request',lambda req:requests.append(req.url))
+  page.on('pageerror',lambda err:errors.append(str(err)))
+  page.goto(f'http://127.0.0.1:{server.server_port}/experiments/full-body/photo-touch.html')
+  page.wait_for_function('ready')
+  assert not any('ariadne-purr.mp3' in url for url in requests)
+  box=page.locator('canvas').bounding_box()
+  def point(u,v):
+   return box['x']+box['width']*u,box['y']+box['height']*((v*1280-240)/960)
+  page.touchscreen.tap(*point(.5,.3))
+  assert page.evaluate('audio===null')
+  assert not any('ariadne-purr.mp3' in url for url in requests)
+  page.touchscreen.tap(*point(.57,.49))
+  page.wait_for_function("recordingReady && audio.state==='running' && purring")
+  assert page.locator('#sound').get_attribute('aria-pressed')=='true'
+  assert any('ariadne-purr.mp3' in url for url in requests)
+  # Tap audition ends; an actual held stroke must reactivate the gain.
+  page.wait_for_function('!purring')
+  page.mouse.move(*point(.57,.49));page.mouse.down()
+  page.wait_for_function('purring')
+  page.mouse.move(*point(.5,.3))
+  page.wait_for_function('!purring')
+  page.mouse.move(*point(.28,.55))
+  page.wait_for_function('purring')
+  page.mouse.up()
+  page.wait_for_function('!purring')
+  page.locator('#sound').click()
+  assert page.evaluate('soundMuted && audio===null')
+  page.touchscreen.tap(*point(.57,.49))
+  assert page.evaluate('audio===null')
+  page.locator('#sound').click()
+  page.wait_for_function("recordingReady && audio.state==='running' && purring")
+  page.evaluate("window.dispatchEvent(new Event('blur'))")
+  page.wait_for_function('!purring')
+  assert not errors,errors
+  print(engine,'same-origin first touch, real recording decode, gap/reentry, mute, explicit audition and interruption OK')
+  page.close()
+ finally:
+  server.shutdown();server.server_close()
  b.close()
