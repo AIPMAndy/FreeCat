@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FreeCat · photo touch lab</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f3efe8;color:#292b29;font:16px/1.5 system-ui,sans-serif}main{max-width:640px;margin:auto;padding:24px 18px}header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}small{color:#5d625d}h1{font-size:clamp(25px,5vw,36px);letter-spacing:-.045em;line-height:1.1;margin:0 0 8px}p{margin:8px 0 16px}canvas{display:block;width:100%;aspect-ratio:1;border-radius:24px;touch-action:none;box-shadow:0 12px 36px #302c231a;background:#e4ded3}canvas:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #176c68;outline-offset:4px}button{font:inherit;border:1px solid #a6aaa0;border-radius:999px;background:transparent;padding:8px 14px;color:inherit}a{color:#245c57}footer{font-size:13px;margin-top:16px}#status{min-height:24px} @media(max-width:450px){main{padding:18px 14px}header{margin-bottom:18px}}
-</style><main><header><strong>FreeCat</strong><button id="lang" type="button">中文</button></header><small id="tag">PHOTO TOUCH LAB · EXPERIMENT</small><h1 id="title">A quiet moment.</h1><p id="hint">Stroke the cat’s head or back. The sofa stays still.</p><canvas id="cat" width="960" height="960" tabindex="0" role="button" aria-label="Pet the cat: arrows choose a body area; space strokes"></canvas><p id="status" role="status" aria-live="polite">Loading photo…</p><footer id="credit">Photo: <a href="https://commons.wikimedia.org/wiki/File:Cat-sleeping-curled-up.jpg">Sonkiki, Wikimedia Commons</a>. File page CC0; structured data also lists <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Resized, cropped in display and interactively displaced; experimental review only. No audio in this prototype.</footer></main>
+*{box-sizing:border-box}body{margin:0;background:#f3efe8;color:#292b29;font:16px/1.5 system-ui,sans-serif}main{max-width:640px;margin:auto;padding:24px 18px}header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}small{color:#5d625d}h1{font-size:clamp(25px,5vw,36px);letter-spacing:-.045em;line-height:1.1;margin:0 0 8px}p{margin:8px 0 16px}canvas{display:block;width:100%;aspect-ratio:1;border-radius:24px;touch-action:none;box-shadow:0 12px 36px #302c231a;background:#e4ded3}canvas:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #176c68;outline-offset:4px}button{min-height:44px;font:inherit;border:1px solid #a6aaa0;border-radius:999px;background:transparent;padding:8px 14px;color:inherit}a{color:#245c57}footer{font-size:13px;margin-top:16px}.audio-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:12px}.audio-controls small{font-size:12px;flex:1;min-width:150px}#status{min-height:24px} @media(max-width:450px){main{padding:18px 14px}header{margin-bottom:18px}}
+</style><main><header><strong>FreeCat</strong><button id="lang" type="button">中文</button></header><small id="tag">PHOTO TOUCH LAB · EXPERIMENT</small><h1 id="title">A quiet moment.</h1><p id="hint">Stroke the cat’s head or back. The sofa stays still.</p><canvas id="cat" width="960" height="960" tabindex="0" role="button" aria-label="Pet the cat: arrows choose a body area; space strokes"></canvas><p id="status" role="status" aria-live="polite">Loading photo…</p><div class="audio-controls"><button id="sound" type="button" aria-pressed="false" disabled>Try purr</button><small id="purrKind">Local synthesized purr; bundled recording used when available</small></div><footer id="credit">Photo: <a href="https://commons.wikimedia.org/wiki/File:Cat-sleeping-curled-up.jpg">Sonkiki, Wikimedia Commons</a>. File page CC0; structured data also lists <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Resized, cropped in display and interactively displaced; experimental review only. Purr: <a href="https://commons.wikimedia.org/wiki/File:Cat_Purring.ogg">Ariadne · Sgerbic</a> · <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a> (MP3 derivative).</footer></main>
 <script>
 'use strict';
 const cv=document.querySelector('#cat'),ctx=cv.getContext('2d'),img=new Image(),patch=document.createElement('canvas'),pc=patch.getContext('2d'),motion=matchMedia('(prefers-reduced-motion: reduce)');
@@ -9,6 +9,71 @@ const cv=document.querySelector('#cat'),ctx=cv.getContext('2d'),img=new Image(),
 const regions=[['head',.28,.55,.105,.068,1],['back',.57,.49,.15,.06,.85],['flank',.72,.585,.11,.068,.65],['paws',.43,.718,.085,.028,.35]];
 const cropY=240,W=960,H=1280;let ready=false,active=null,last=null,vx=0,vy=0,tx=0,ty=0,force=0,raf=0,prev=0,region=null,position=null,keyboard=0,zh=false;
 const $=id=>document.getElementById(id);const names={head:'头部',back:'背部',flank:'身体',paws:'爪子'};
+let audioVisible=true;
+// Audio starts only on an intentional gesture. A local textured synth is the immediate fallback.
+const soundButton=$('sound'),Audio=window.AudioContext||window.webkitAudioContext;
+const PURR_RECORDING='../../assets/ariadne-purr.mp3';
+let audio=null,purrGain=null,purring=false,soundMuted=false,previewUntil=0,previewTimer=0,previewRequest=0,recordingReady=false;
+function syncPurr(){
+  const next=!!(audio&&purrGain&&audio.state==='running'&&((active!==null&&last!==null)||performance.now()<previewUntil)&&audioVisible&&!document.hidden&&!!ready);
+  if(next===purring)return;purring=next;
+  if(purrGain){const t=audio.currentTime;purrGain.gain.cancelScheduledValues(t);purrGain.gain.setTargetAtTime(next?.60:0,t,next?.085:.18)}
+}
+function makePurrBuffer(a){
+  const seconds=4,n=Math.round(a.sampleRate*seconds),b=a.createBuffer(1,n,a.sampleRate),out=b.getChannelData(0);
+  let seed=73129,noise=0;for(let i=0;i<n;i++){
+    seed=(Math.imul(seed,1664525)+1013904223)>>>0;noise=.91*noise+.09*(seed/2147483648-1);
+    const t=i/a.sampleRate,pulse=.55+.45*Math.sin(2*Math.PI*25*t),breath=.80+.20*Math.sin(2*Math.PI*.5*t);
+    const fade=Math.min(1,i/256,(n-1-i)/256);
+    out[i]=fade*breath*pulse*(.11*Math.sin(2*Math.PI*75*t)+.15*Math.sin(2*Math.PI*125*t)+.10*Math.sin(2*Math.PI*175*t)+.045*Math.sin(2*Math.PI*225*t)+.30*noise);
+  }return b;
+}
+function soundCredit(){const el=$('purrKind');if(!el)return;soundButton.textContent=soundMuted?(zh?'试听呼噜声':'Try purr'):(audio&&audio.state==='running'?(zh?'关闭呼噜声':'Mute purr'):(zh?'试听呼噜声':'Try purr'));el.textContent=recordingReady?(zh?'真实呼噜录音（已加载）':'Recorded purr (loaded)'):(zh?'本地合成呼噜声；内置实录可用时自动切换':'Local synthesized purr; bundled recording used when available')}
+function disablePurr(){
+  previewRequest++;previewUntil=0;clearTimeout(previewTimer);recordingReady=false;
+  if(audio){const old=audio;audio=null;purrGain=null;purring=false;old.close().catch(()=>{})}
+  soundButton.setAttribute('aria-pressed','false');soundCredit();
+}
+function audition(){previewUntil=performance.now()+1400;clearTimeout(previewTimer);previewTimer=setTimeout(()=>{previewUntil=0;syncPurr()},1430);syncPurr()}
+// Reject effectively silent recordings; match their level without clipping or unbounded amplification.
+function recordingLevel(buffer){
+  let square=0,peak=0,count=0;
+  for(let channel=0;channel<buffer.numberOfChannels;channel++){
+    const samples=buffer.getChannelData(channel);
+    for(let i=0;i<samples.length;i++){
+      const v=samples[i];if(!Number.isFinite(v))return null;
+      square+=v*v;peak=Math.max(peak,Math.abs(v));count++;
+    }
+  }
+  if(!count||peak<=0)return null;
+  const rms=Math.sqrt(square/count);
+  if(rms<.003)return null;
+  const gain=Math.min(4,.085/rms,.7/peak);
+  return rms*gain>=.025?gain:null;
+}
+async function loadRecording(a,synthetic){
+  try{const response=await fetch(PURR_RECORDING,{credentials:'omit',referrerPolicy:'no-referrer'});if(!response.ok)throw Error('recording');const raw=await response.arrayBuffer();if(raw.byteLength>2000000||audio!==a)return;const b=await a.decodeAudioData(raw);if(audio!==a||!purrGain||b.duration<1||b.duration>90)return;const level=recordingLevel(b);if(level===null)return;
+    const src=a.createBufferSource(),g=a.createGain();src.buffer=b;src.loop=true;g.gain.value=0;src.connect(g);g.connect(purrGain);src.start();const now=a.currentTime;g.gain.setTargetAtTime(level,now,.28);synthetic.gain.setTargetAtTime(0,now,.28);recordingReady=true;soundCredit();
+  }catch{/* fallback remains audible; do not imply recording was loaded */}
+}
+function enablePurr(previewSound=false){
+  if(!Audio||!ready||soundMuted)return;
+  let a=audio;const request=previewSound?++previewRequest:0;let auditioned=false;
+  const playPreview=()=>{if(!auditioned&&request&&request===previewRequest&&audio===a&&a.state==='running'&&!soundMuted&&!document.hidden&&audioVisible&&!!ready){auditioned=true;audition()}};
+  try{
+    if(!a){a=new Audio();audio=a;const src=a.createBufferSource(),synthetic=a.createGain();src.buffer=makePurrBuffer(a);src.loop=true;synthetic.gain.value=1;purrGain=a.createGain();purrGain.gain.value=0;src.connect(synthetic);synthetic.connect(purrGain);purrGain.connect(a.destination);src.start();
+      a.addEventListener('statechange',()=>{if(audio!==a)return;soundButton.setAttribute('aria-pressed',String(a.state==='running'));soundCredit();syncPurr()});loadRecording(a,synthetic);
+    }
+    playPreview();
+    // Call resume synchronously inside the gesture, not after an await or a network request.
+    a.resume().then(()=>{if(audio!==a)return;soundButton.setAttribute('aria-pressed',String(a.state==='running'));soundCredit();playPreview();syncPurr()}).catch(()=>{if(audio===a){disablePurr();say('Tap sound to try again / 声音启动失败，请点击声音重试')}});
+  }catch{if(audio===a)disablePurr();say('Sound unavailable / 当前无法播放声音')}
+}
+function gestureSound(){if(!soundMuted&&Audio){if(!audio)enablePurr(true);else if(audio.state!=='running')enablePurr(true)}}
+soundButton.disabled=true;
+soundButton.onclick=()=>{if(audio&&audio.state==='running'){soundMuted=true;disablePurr();return}soundMuted=false;enablePurr(true);soundCredit()};
+function interruptAudio(){audioVisible=false;previewRequest++;previewUntil=0;clearTimeout(previewTimer);syncPurr()}
+window.addEventListener('focus',()=>{audioVisible=true;syncPurr()});
 function say(s){$('status').textContent=s}function resting(){say(zh?'轻轻抚摸猫咪。':'Gently pet the cat.')}function feedback(r){say((zh?'正在抚摸：':'Petting · ')+(zh?names[r[0]]:r[0]))}
 function hit(x,y){return regions.find(r=>((x-r[1])/r[3])**2+((y-r[2])/r[4])**2<=.82)||null}
 function uv(e){const b=cv.getBoundingClientRect();return [(e.clientX-b.left)/b.width,(cropY+(e.clientY-b.top)/b.height*W)/H]}
@@ -18,10 +83,10 @@ function frame(t){raf=0;if(!ready)return;if(motion.matches){resetMotion();return
 function wake(){if(!raf&&ready&&!motion.matches)raf=requestAnimationFrame(frame)}
 function resetMotion(){if(raf)cancelAnimationFrame(raf);raf=0;prev=0;vx=vy=tx=ty=force=0;if(ready)base();if(!motion.matches&&active!==null&&last!==null)wake()}
 if(motion.addEventListener)motion.addEventListener('change',resetMotion);else if(motion.addListener)motion.addListener(resetMotion);
-function start(p,id){const r=hit(...p);if(!ready||!r||active!==null)return false;active=id;region=r;position=p;last=p;vx=vy=force=0;tx=0;ty=3;feedback(r);wake();return true}
-function move(p){if(active===null)return;const r=hit(...p);if(!r){if(last!==null){last=null;tx=ty=0;resting();wake()}return}if(last===null||r!==region){region=r;position=last=p;vx=vy=force=0;tx=0;ty=2;feedback(r);wake();return}tx=Math.max(-5,Math.min(5,(p[0]-last[0])*W*.65));ty=Math.max(-5,Math.min(5,(p[1]-last[1])*H*.65));position=p;last=p;wake()}
-function end(){if(active===null)return;active=null;last=null;tx=ty=0;resting();wake()}
-cv.addEventListener('pointerdown',e=>{if(e.button===0&&start(uv(e),e.pointerId))cv.setPointerCapture(e.pointerId)});cv.addEventListener('pointermove',e=>{if(active===e.pointerId)move(uv(e))});for(const n of ['pointerup','pointercancel','lostpointercapture'])cv.addEventListener(n,e=>{if(active===e.pointerId)end()});window.addEventListener('blur',()=>{if(active!==null)end()});document.addEventListener('visibilitychange',()=>{if(document.hidden&&active!==null)end()});cv.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();keyboard=(keyboard+(['ArrowLeft','ArrowUp'].includes(e.key)?3:1))%4;feedback(regions[keyboard])}else if(e.code==='Space'){e.preventDefault();if(!e.repeat){const r=regions[keyboard];start([r[1],r[2]],'key')}}});cv.addEventListener('keyup',e=>{if(e.code==='Space'&&active==='key')end()});cv.addEventListener('blur',()=>{if(active==='key')end()});
-$('lang').onclick=()=>{zh=!zh;document.documentElement.lang=zh?'zh-CN':'en';$('lang').textContent=zh?'English':'中文';$('tag').textContent=zh?'真实摄影触感实验':'PHOTO TOUCH LAB · EXPERIMENT';$('title').textContent=zh?'安静片刻。':'A quiet moment.';$('hint').textContent=zh?'轻抚猫咪的头部或背部，沙发保持静止。':'Stroke the cat’s head or back. The sofa stays still.';cv.setAttribute('aria-label',zh?'抚摸猫咪：方向键选择部位，空格抚摸':'Pet the cat: arrows choose a body area; space strokes');if(ready)resting()};
-img.onload=()=>{if(img.naturalWidth!==W||img.naturalHeight!==H){say('Unexpected photo dimensions.');return}ready=true;base();resting()};img.onerror=()=>say('Photo missing: place the verified sonkiki.webp beside this page.');img.src='sonkiki.webp';
+function start(p,id){const r=hit(...p);if(!ready||!r||active!==null)return false;active=id;region=r;position=p;last=p;vx=vy=force=0;tx=0;ty=3;feedback(r);wake();syncPurr();return true}
+function move(p){if(active===null)return;const r=hit(...p);if(!r){if(last!==null){last=null;tx=ty=0;resting();wake();syncPurr()}return}if(last===null||r!==region){region=r;position=last=p;vx=vy=force=0;tx=0;ty=2;feedback(r);wake();syncPurr();return}tx=Math.max(-5,Math.min(5,(p[0]-last[0])*W*.65));ty=Math.max(-5,Math.min(5,(p[1]-last[1])*H*.65));position=p;last=p;wake()}
+function end(){if(active===null)return;active=null;last=null;tx=ty=0;resting();wake();syncPurr()}
+cv.addEventListener('pointerdown',e=>{if(e.button===0&&start(uv(e),e.pointerId)){cv.setPointerCapture(e.pointerId);audioVisible=true;if(e.pointerType==='mouse')gestureSound()}});cv.addEventListener('pointermove',e=>{if(active===e.pointerId)move(uv(e))});for(const n of ['pointerup','pointercancel','lostpointercapture'])cv.addEventListener(n,e=>{if(active===e.pointerId){const unlock=n==='pointerup'&&e.pointerType!=='mouse'&&last!==null;end();if(unlock)gestureSound()}});cv.addEventListener('click',e=>{if(e.isTrusted&&e.detail>0&&hit(...uv(e)))gestureSound()});window.addEventListener('blur',()=>{if(active!==null)end();interruptAudio()});document.addEventListener('visibilitychange',()=>{if(document.hidden){if(active!==null)end();interruptAudio()}else{audioVisible=true;syncPurr()}});cv.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();keyboard=(keyboard+(['ArrowLeft','ArrowUp'].includes(e.key)?3:1))%4;feedback(regions[keyboard])}else if(e.code==='Space'){e.preventDefault();if(!e.repeat){const r=regions[keyboard];if(start([r[1],r[2]],'key')){audioVisible=true;gestureSound()}}}});cv.addEventListener('keyup',e=>{if(e.code==='Space'&&active==='key')end()});cv.addEventListener('blur',()=>{if(active==='key')end()});
+$('lang').onclick=()=>{zh=!zh;document.documentElement.lang=zh?'zh-CN':'en';$('lang').textContent=zh?'English':'中文';$('tag').textContent=zh?'真实摄影触感实验':'PHOTO TOUCH LAB · EXPERIMENT';$('title').textContent=zh?'安静片刻。':'A quiet moment.';$('hint').textContent=zh?'轻抚猫咪的头部或背部，沙发保持静止。':'Stroke the cat’s head or back. The sofa stays still.';cv.setAttribute('aria-label',zh?'抚摸猫咪：方向键选择部位，空格抚摸':'Pet the cat: arrows choose a body area; space strokes');soundCredit();if(ready)resting()};
+img.onload=()=>{if(img.naturalWidth!==W||img.naturalHeight!==H){say('Unexpected photo dimensions.');return}ready=true;base();soundButton.disabled=!Audio;resting();soundCredit()};img.onerror=()=>say('Photo missing: place the verified sonkiki.webp beside this page.');img.src='sonkiki.webp';
 </script></html>
