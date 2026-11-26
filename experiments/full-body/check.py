@@ -18,6 +18,8 @@ with sync_playwright() as p:
   assert result['ok'] and result['inside']>100 and result['outside']==0 and result['backgroundRejected'] and result['regions'],result
   box=page.locator('canvas').bounding_box();x=box['x']+box['width']*.57;y=box['y']+box['height']*((.49*1280-240)/960);page.mouse.move(x,y);page.mouse.down();page.mouse.move(x+10,y+2,steps=4);page.wait_for_timeout(80);page.screenshot(path=str(root/f'lab-{size[0]}-touch.png'));page.mouse.up();page.wait_for_timeout(900);assert page.evaluate('raf===0 && active===null');page.locator('canvas').focus();page.keyboard.press('ArrowRight');page.keyboard.down('Space');assert page.evaluate('active==="key"');page.keyboard.up('Space');page.locator('#lang').click();assert page.locator('html').get_attribute('lang')=='zh-CN';assert not errors,errors
   
+  # Language change can reflow the instructions, so recompute screen coordinates.
+  box=page.locator('canvas').bounding_box();x=box['x']+box['width']*.57;y=box['y']+box['height']*((.49*1280-240)/960)
   if size[0]<500 and engine=='chromium':
    session=page.context.new_cdp_session(page);session.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':x,'y':y}]});assert page.evaluate('active!==null');session.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[{'x':x+8,'y':y+3}]});session.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});assert page.evaluate('active===null');print('CDP mobile touch start/move/end OK')
   # One held pointer must survive the unpainted gap, without animating the sofa.
