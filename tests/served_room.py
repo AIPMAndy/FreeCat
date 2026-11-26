@@ -89,6 +89,27 @@ try:
             page.locator("#nextCat").click();page.wait_for_function("selectedCat===0")
             page.locator("#nextCat").click();page.wait_for_function("selectedCat===1")
             page.locator("#nextCat").click();page.wait_for_function("selectedCat===PHOTO_CAT")
+            # Real photograph trail is shorter and bounded; verify actual canvas settles.
+            page.wait_for_function("raf===0")
+            result = page.evaluate("""()=>{const now=performance.now();
+                for(let i=0;i<8;i++)remember([.16+i*.07,.63],[.03,0],now);
+                const result={count:trail.length,life:trailLife(),weight:trailWeight(0)};
+                wake();return result}""")
+            assert result == {"count":4,"life":650,"weight":.22}, result
+            page.wait_for_function("trail.length===0 && raf===0", timeout=3000)
+            # Use the exact local photo as an upload fixture: it must not be animated at rest.
+            page.locator("#file").set_input_files(str(ROOT/"experiments/chelsea.webp"))
+            page.wait_for_function("selectedCat===null && !!mask && raf===0")
+            still = page.evaluate("cv.toDataURL()")
+            page.wait_for_timeout(350)
+            assert page.evaluate("raf===0") and still==page.evaluate("cv.toDataURL()")
+            page.locator("#cat").focus()
+            page.keyboard.down("ArrowLeft")
+            page.wait_for_function("pressed && raf!==0")
+            page.keyboard.up("ArrowLeft")
+            page.wait_for_function("!pressed && raf===0", timeout=3000)
+            page.evaluate("load(ROOM_CATS[PHOTO_CAT],false,PHOTO_CAT)")
+            page.wait_for_function("selectedCat===PHOTO_CAT && raf===0")
             page.locator("#language").click()
             assert "Real photograph" in page.locator("#photoCredit").inner_text()
             assert not errors and not missing, (errors,missing)
