@@ -1,63 +1,99 @@
-"""Real photograph, first-touch purr, interpolation and mute; in-memory Chromium.
-This intentionally blocks the optional remote recording. Not a real-speaker/Pages test.
-"""
+"""Real full-body photographs, WebGL/2D background & face protection, first-touch purr fallback and switching."""
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 import base64, os
-ROOT=Path(__file__).resolve().parents[1]
-def uri(path,mime):return 'data:'+mime+';base64,'+base64.b64encode(path.read_bytes()).decode()
-html=(ROOT/'room.html').read_text()
-for n in ('chelsea.webp','sleepy-tabby.webp','ginger.webp'):
-    html=html.replace('experiments/'+n,uri(ROOT/'experiments'/n,'image/webp'))
-html=html.replace('assets/freecat.svg',uri(ROOT/'assets/freecat.svg','image/svg+xml'))
-html=html.replace('<head>','<head><script>window.fetch=()=>Promise.reject(Error("recording unavailable fixture"));</script>',1)
+
+ROOT = Path(__file__).resolve().parents[1]
+def uri(path, mime): return 'data:' + mime + ';base64,' + base64.b64encode(path.read_bytes()).decode()
+
+html = (ROOT / 'room.html').read_text()
+for rel in (
+    'assets/cats/milo-tabby.webp', 'assets/cats/linen-tabby.webp', 'assets/cats/siamese-curl.webp',
+    'assets/cats/thumb-milo-tabby.webp', 'assets/cats/thumb-linen-tabby.webp', 'assets/cats/thumb-siamese-curl.webp',
+    'assets/cats/thumb-sleepy-tabby.webp', 'assets/cats/thumb-ginger.webp',
+    'experiments/sleepy-tabby.webp', 'experiments/ginger.webp',
+):
+    html = html.replace(rel, uri(ROOT / rel, 'image/webp'))
+html = html.replace('assets/freecat.svg', uri(ROOT / 'assets/freecat.svg', 'image/svg+xml'))
+html = html.replace('<head>', '<head><script>window.fetch=()=>Promise.reject(Error("recording unavailable fixture"));</script>', 1)
+
 with sync_playwright() as pw:
-    b=pw.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH') or None,args=['--no-sandbox','--disable-dev-shm-usage'])
-    for w,h in [(1440,900),(390,844),(320,720)]:
-        page=b.new_page(viewport={'width':w,'height':h},locale='zh-CN',device_scale_factor=1,has_touch=w<600,is_mobile=w<600,reduced_motion='no-preference')
-        errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-        page.set_content(html);page.wait_for_function('!!mask&&selectedCat===PHOTO_CAT&&cv.width>1')
-        page.wait_for_function('raf===0')
-        assert page.evaluate('image.width===375&&image.height===300&&audio===null&&!purring')
-        # Sample the exact bundled image. The core eye/nose regions must not move,
-        # while cheek/forehead texture still responds to a bounded stroke.
-        protected=page.evaluate('''()=>{
-            const w=cv.width,h=cv.height,x=box[0]*w,y=box[1]*h,iw=box[2]*w,ih=box[3]*h,r=Math.min(iw,ih)*.24;
-            const baseline=()=>{ctx.clearRect(0,0,w,h);ctx.drawImage(image,x,y,iw,ih);return ctx.getImageData(0,0,w,h).data};
-            const a=baseline(),regions=[[.38,.385,.13,.15],[.78,.445,.11,.15],[.65,.81,.12,.11]],result=[];
-            for(const p of [[.38,.385],[.78,.445],[.65,.81],[.19,.63],[.52,.15]]){
-                baseline();paintPatch(p,[.042,.012],1,x,y,iw,ih,r);const b=ctx.getImageData(0,0,w,h).data;let changed=0,core=0;
-                for(let j=0;j<h;j++)for(let i=0;i<w;i++){const k=(j*w+i)*4;if(Math.max(...[0,1,2,3].map(c=>Math.abs(a[k+c]-b[k+c])))<=2)continue;changed++;const u=(i+.5-x)/iw,v=(j+.5-y)/ih;if(regions.some(([cx,cy,sx,sy])=>Math.hypot((u-cx)/sx,(v-cy)/sy)<.60))core++}
-                result.push({changed,core});
-            }baseline();return result;
+    b = pw.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH') or None, args=['--no-sandbox', '--disable-dev-shm-usage'])
+    for w, h in [(1440, 900), (390, 844), (320, 720)]:
+        page = b.new_page(viewport={'width': w, 'height': h}, locale='zh-CN', device_scale_factor=1, has_touch=w < 600, is_mobile=w < 600, reduced_motion='no-preference')
+        errors = []
+        page.on('pageerror', lambda e: errors.append(str(e)))
+        page.set_content(html)
+        page.wait_for_function('!!mask && selectedCat===PHOTO_CAT && cv.width>1')
+        assert page.evaluate('image.width===1024 && image.height===1024 && audio===null && !purring')
+        # Verify background sofa pixels and protected eye/nose core remain untouched while back fur moves.
+        isolation = page.evaluate('''()=>{
+            const read = () => {
+                if (rendererMode === 'webgl' && gl) {
+                    const buf = new Uint8Array(cv.width * cv.height * 4);
+                    gl.readPixels(0, 0, cv.width, cv.height, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+                    return {data: buf, flip: true};
+                }
+                return {data: ctx.getImageData(0, 0, cv.width, cv.height).data, flip: false};
+            };
+            stop();
+            if (rendererMode === 'webgl' && gl) drawWebGL(0); else draw2D(0);
+            const a = read();
+            point = [.52, .39]; delta = [.04, .015]; strength = 1;
+            if (rendererMode === 'webgl' && gl) drawWebGL(1200); else draw2D(1200);
+            const b = read();
+            let bodyMoved = 0, sofaMoved = 0, faceCoreMoved = 0;
+            const fp = CATS[0].faceProtect;
+            for (let y = 0; y < cv.height; y += 2) for (let x = 0; x < cv.width; x += 2) {
+                const ry = a.flip ? (cv.height - 1 - y) : y;
+                const i = (ry * cv.width + x) * 4;
+                if (Math.abs(a.data[i]-b.data[i]) + Math.abs(a.data[i+1]-b.data[i+1]) + Math.abs(a.data[i+2]-b.data[i+2]) <= 3) continue;
+                const u = x / cv.width, v = y / cv.height;
+                if (v < 0.16 || v > 0.88) sofaMoved++;
+                else if (Math.hypot((u - fp[0]) / fp[2], (v - fp[1]) / fp[3]) < 0.40) faceCoreMoved++;
+                else bodyMoved++;
+            }
+            strength = 0; delta = [0, 0]; wake();
+            return {mode: rendererMode, bodyMoved, sofaMoved, faceCoreMoved};
         }''')
-        assert all(p['core']==0 for p in protected),protected
-        assert all(p['changed']>50 for p in protected[-2:]),protected
+        assert isolation['sofaMoved'] == 0 and isolation['faceCoreMoved'] == 0 and isolation['bodyMoved'] > 80, isolation
         assert '真实摄影' in page.locator('#photoCredit').inner_text()
         assert page.locator('#photoSource').is_visible()
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
-        canvas=page.locator('#cat');canvas.scroll_into_view_if_needed();r=canvas.bounding_box()
-        x,y=page.evaluate('()=>{const r=cv.getBoundingClientRect();return [r.left+(box[0]+.45*box[2])*r.width,r.top+(box[1]+.48*box[3])*r.height]}')
-        before=page.evaluate('cv.toDataURL()');page.mouse.move(x,y);page.mouse.down()
-        page.wait_for_function("audio&&audio.state==='running'&&purring&&purrGain.gain.value>.08")
-        levels=page.evaluate('''()=>{const a=makePurrBuffer(audio).getChannelData(0);let sq=0,peak=0;for(let i=0;i<a.length;i++){sq+=a[i]*a[i];peak=Math.max(peak,Math.abs(a[i]))}return {rms:Math.sqrt(sq/a.length),peak}}''')
-        assert .02<levels['rms']<.3 and levels['peak']<.8,levels
-        page.mouse.move(x+min(60,r['width']*.15),y+12,steps=1);page.wait_for_timeout(100)
-        assert page.evaluate('Math.hypot(...target)<=.042001&&trail.length<=8&&trail.length>=2')
-        assert before!=page.evaluate('cv.toDataURL()')
-        page.mouse.up();page.wait_for_function('!purring&&purrGain.gain.value<.02',timeout=4000)
-        page.wait_for_function('raf===0&&trail.length===0',timeout=4000)
-        still=page.evaluate('cv.toDataURL()');page.wait_for_timeout(250);assert page.evaluate('raf===0') and still==page.evaluate('cv.toDataURL()')
-        page.locator('#sound').click();assert page.evaluate('audio===null&&soundMuted')
-        page.mouse.move(x,y);page.mouse.down();page.mouse.up();page.wait_for_timeout(180)
+
+        # Background click rejected; cat back drag activates synthetic purr fallback cleanly.
+        assert not page.evaluate('hit([.5, .08])')
+        assert page.evaluate('hit([.52, .39])')
+        x, y = page.evaluate('()=>{const r=cv.getBoundingClientRect();return [r.left+r.width*.52, r.top+r.height*.39]}')
+        page.mouse.move(x, y); page.mouse.down()
+        page.wait_for_function("audio && audio.state==='running' && purring && purrGain.gain.value>.08")
+        assert '背部' in page.locator('#status').inner_text()
+        levels = page.evaluate('''()=>{const a=makePurrBuffer(audio).getChannelData(0);let sq=0,peak=0;for(let i=0;i<a.length;i++){sq+=a[i]*a[i];peak=Math.max(peak,Math.abs(a[i]))}return {rms:Math.sqrt(sq/a.length),peak}}''')
+        assert .02 < levels['rms'] < .3 and levels['peak'] < .8, levels
+        page.mouse.move(x + 36, y + 10, steps=3); page.wait_for_timeout(90)
+        assert page.evaluate('trail.length>=1 && trail.length<=TRAIL_LIMIT')
+        page.mouse.up()
+        page.wait_for_function('!purring && purrGain.gain.value<.02', timeout=4000)
+
+        # Reduced motion halts idle loop completely.
+        page.emulate_media(reduced_motion='reduce')
+        page.wait_for_function('motion.matches && raf===0', timeout=4000)
+
+        # Mute, switch through real + AI cats, check honest AI labeling and English switch.
+        page.locator('#sound').click(); assert page.evaluate('audio===null && soundMuted')
+        page.mouse.move(x, y); page.mouse.down(); page.mouse.up(); page.wait_for_timeout(120)
         assert page.evaluate('audio===null')
-        page.locator('#sound').click();page.wait_for_function('audio&&purring&&purrGain.gain.value>.05')
-        page.wait_for_function('!purring&&purrGain.gain.value<.02',timeout=4000)
-        page.locator('#nextCat').click();page.wait_for_function('selectedCat===0');assert 'AI' in page.locator('#photoCredit').inner_text()
-        page.locator('#nextCat').click();page.wait_for_function('selectedCat===1')
-        page.locator('#nextCat').click();page.wait_for_function('selectedCat===PHOTO_CAT')
-        assert '真实摄影' in page.locator('#photoCredit').inner_text()
-        page.locator('#language').click();assert 'Real photograph' in page.locator('#photoCredit').inner_text()
-        assert not errors,errors
-        print(f'{w}: photo, sound fallback, stroke, mute, switch, translation, layout; {levels}; face protection {protected}',flush=True);page.close()
+        page.locator('#sound').click(); page.wait_for_function('audio && purring && purrGain.gain.value>.05')
+        page.wait_for_function('!purring && purrGain.gain.value<.02', timeout=4000)
+
+        page.locator('#catSwatches button').nth(3).click()
+        page.wait_for_function('selectedCat===3'); assert 'AI' in page.locator('#photoCredit').inner_text()
+        page.locator('#catSwatches button').nth(1).click()
+        page.wait_for_function('selectedCat===1'); assert '真实摄影' in page.locator('#photoCredit').inner_text()
+        page.locator('#catSwatches button').nth(0).click()
+        page.wait_for_function('selectedCat===0')
+        page.locator('#language').click(); assert 'Real photograph' in page.locator('#photoCredit').inner_text()
+        assert not errors, errors
+        print(f'{w}: real full-body photo, isolation={isolation}, fallback={levels}', flush=True)
+        page.close()
     b.close()
