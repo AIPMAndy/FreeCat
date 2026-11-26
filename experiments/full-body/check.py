@@ -1,9 +1,15 @@
 from playwright.sync_api import sync_playwright
 from pathlib import Path
-import hashlib, base64
+import hashlib, base64, os
 root=Path(__file__).parent
 with sync_playwright() as p:
- b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+ engine=os.environ.get('FREECAT_BROWSER','chromium')
+ options={}
+ if engine=='chromium':
+  options['args']=['--no-sandbox']
+  executable=os.environ.get('CHROMIUM_PATH') or ('/usr/bin/chromium' if Path('/usr/bin/chromium').exists() else None)
+  if executable: options['executable_path']=executable
+ b=getattr(p,engine).launch(**options)
  for size in [(390,844),(1440,900)]:
   page=b.new_page(viewport=dict(width=size[0],height=size[1]),device_scale_factor=1,has_touch=size[0]<500)
   errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
@@ -12,7 +18,19 @@ with sync_playwright() as p:
   assert result['ok'] and result['inside']>100 and result['outside']==0 and result['backgroundRejected'] and result['regions'],result
   box=page.locator('canvas').bounding_box();x=box['x']+box['width']*.57;y=box['y']+box['height']*((.49*1280-240)/960);page.mouse.move(x,y);page.mouse.down();page.mouse.move(x+10,y+2,steps=4);page.wait_for_timeout(80);page.screenshot(path=str(root/f'lab-{size[0]}-touch.png'));page.mouse.up();page.wait_for_timeout(900);assert page.evaluate('raf===0 && active===null');page.locator('canvas').focus();page.keyboard.press('ArrowRight');page.keyboard.down('Space');assert page.evaluate('active==="key"');page.keyboard.up('Space');page.locator('#lang').click();assert page.locator('html').get_attribute('lang')=='zh-CN';assert not errors,errors
   
-  if size[0]<500:
+  if size[0]<500 and engine=='chromium':
    session=page.context.new_cdp_session(page);session.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':x,'y':y}]});assert page.evaluate('active!==null');session.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[{'x':x+8,'y':y+3}]});session.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});assert page.evaluate('active===null');print('CDP mobile touch start/move/end OK')
+  # One held pointer must survive the unpainted gap, without animating the sofa.
+  def point(u,v):
+   return box['x']+box['width']*u,box['y']+box['height']*((v*1280-240)/960)
+  hx,hy=point(.28,.55);gx,gy=point(.5,.3)
+  page.mouse.move(x,y);page.mouse.down();page.mouse.move(gx,gy)
+  assert page.evaluate('active!==null && last===null')
+  page.wait_for_timeout(900);assert page.evaluate('active!==null && raf===0')
+  page.mouse.move(hx,hy);assert page.evaluate('active!==null && region[0]==="head" && last!==null')
+  page.mouse.move(hx+6,hy);page.mouse.up();page.wait_for_timeout(900)
+  assert page.evaluate('active===null && raf===0')
+  assert not errors,errors
+  print(engine,size,'held pointer gap/reentry/idle OK')
   page.emulate_media(reduced_motion='reduce');assert page.evaluate('motion.matches');assert page.evaluate('''() => {base();const before=ctx.getImageData(0,0,960,960).data;start([.57,.49],123);vx=5;force=1;paint();const after=ctx.getImageData(0,0,960,960).data;end();return before.every((v,i)=>v===after[i])}''');print(size,result,'mouse keyboard reduced motion idle OK');page.close()
  b.close()
