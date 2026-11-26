@@ -44,3 +44,7 @@ Replace the remaining twelve illustration-only entries with photographs that hav
 ## Round 20 priorities
 
 Treat real homepage photography, audible first-touch sound, a unified mark and tactile interaction as P0. Improve the real photo library with verifiable licensed full-body sleeping/top-down images, bundle a verified real recording, test real iOS/Android and deployed root. Keep explicit mute, no pre-gesture autoplay, honest AI labels and original code license. Measure tactile perception, not merely pixel movement.
+
+## Round 43 handoff
+
+Merged PR #6 and promoted the full-body photographic sanctuary room (`room.html`) with three verified local real photographs (Milo, Linen, Siam), two explicitly labeled AI studio cats, a single-pass WebGL tactile displacement shader (with Canvas 2D fallback, 0 background drift, face protection, masked breathing & ear twitch), stroke-linked real MP3 purr, separate desktop/mobile artistry, and an upgraded social card. Next priorities: (1) complete 20/20 verified real Atlas photography (evaluating WCF-cataloged Bombay breed photo `BOM Melody in Black of Bagilis`), add multi-angle breed photography and local bundled mirrors; (2) physical iPhone Safari and Android touch/speaker perception testing; (3) investigate subtle WebGL mesh depth/parallax and ambient soundscapes while preserving low-power static hosting and MIT open-source integrity.

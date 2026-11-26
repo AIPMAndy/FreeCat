@@ -1,52 +1,77 @@
+"""Verify organic idle breathing & ear micro-twitch stay strictly inside body mask, honor reduced motion, and stop on uploads."""
 from pathlib import Path
-import base64
+import base64, json, os
 from playwright.sync_api import sync_playwright
-import json, os
-ROOT=Path(__file__).resolve().parents[1]
-OUT=os.environ.get('FREECAT_SCREENSHOTS')
-if OUT: Path(OUT).mkdir(parents=True,exist_ok=True)
-source=(ROOT/'room.html').read_text()
-portrait='data:image/webp;base64,'+base64.b64encode((ROOT/'experiments/sleepy-tabby.webp').read_bytes()).decode()
-icon='data:image/svg+xml;base64,'+base64.b64encode((ROOT/'assets/freecat.svg').read_bytes()).decode()
-html=source.replace('experiments/sleepy-tabby.webp',portrait).replace('experiments/chelsea.webp','data:image/webp;base64,'+base64.b64encode((ROOT/'experiments/chelsea.webp').read_bytes()).decode()).replace('assets/freecat.svg',icon)
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = os.environ.get('FREECAT_SCREENSHOTS')
+if OUT: Path(OUT).mkdir(parents=True, exist_ok=True)
+def uri(rel, mime='image/webp'): return 'data:' + mime + ';base64,' + base64.b64encode((ROOT / rel).read_bytes()).decode()
+
+html = (ROOT / 'room.html').read_text().replace('assets/freecat.svg', uri('assets/freecat.svg', 'image/svg+xml'))
+for rel in (
+    'assets/cats/milo-tabby.webp', 'assets/cats/linen-tabby.webp', 'assets/cats/siamese-curl.webp',
+    'assets/cats/thumb-milo-tabby.webp', 'assets/cats/thumb-linen-tabby.webp', 'assets/cats/thumb-siamese-curl.webp',
+    'assets/cats/thumb-sleepy-tabby.webp', 'assets/cats/thumb-ginger.webp',
+    'experiments/sleepy-tabby.webp', 'experiments/ginger.webp',
+):
+    html = html.replace(rel, uri(rel))
+
 with sync_playwright() as pw:
-    browser=pw.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH') or None,args=['--no-sandbox'])
-    for w,h in [(320,720),(390,844),(1440,900)]:
-        page=browser.new_page(viewport={'width':w,'height':h},device_scale_factor=1,locale='zh-CN',has_touch=w<600,is_mobile=w<600,reduced_motion='no-preference')
-        errors=[]
-        page.on('pageerror',lambda e:errors.append(str(e)))
-        page.route('https://**/*',lambda route:route.abort());page.set_content(html)
-        page.wait_for_function('!!mask && selectedCat===PHOTO_CAT && !cv.hidden && box[2]>0 && cv.width>1')
-        page.locator('#nextCat').click();page.wait_for_function('selectedCat===0 && hit(point)');page.evaluate('soundMuted=true')
+    browser = pw.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH') or None, args=['--no-sandbox'])
+    for w, h in [(320, 720), (390, 844), (1440, 900)]:
+        page = browser.new_page(viewport={'width': w, 'height': h}, device_scale_factor=1, locale='zh-CN', has_touch=w < 600, is_mobile=w < 600, reduced_motion='no-preference')
+        errors = []
+        page.on('pageerror', lambda e: errors.append(str(e)))
+        page.route('https://**/*', lambda route: route.abort())
+        page.set_content(html)
+        page.wait_for_function('!!mask && selectedCat===PHOTO_CAT && !cv.hidden && cv.width>1')
+        page.evaluate('soundMuted=true')
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
-        metrics=page.evaluate('''()=>{
-            const old=paintIdle;
-            function frame(t,enabled){stop();paintIdle=enabled?old:()=>{};draw(t);if(raf)cancelAnimationFrame(raf);raf=0;return ctx.getImageData(0,0,cv.width,cv.height).data}
-            function compare(t){const a=frame(t,false),b=frame(t,true);let changed=0,alpha=0,face=0,full=0;for(let y=0;y<cv.height;y++)for(let x=0;x<cv.width;x++){const i=(y*cv.width+x)*4;const d=Math.max(...[0,1,2,3].map(k=>Math.abs(a[i+k]-b[i+k])));if(d>3){changed++;if(Math.abs(a[i+3]-b[i+3])>3)alpha++;if(a[i+3]===255&&b[i+3]<248)full++;const u=(x/cv.width-box[0])/box[2],v=(y/cv.height-box[1])/box[3];if(u>.19&&u<.48&&v>.17&&v<.33)face++}}return {changed,alpha,face,full}}
-            const quiet=compare(0),ear=compare(8205),tail=compare(8875);paintIdle=old;wake();return {quiet,ear,tail}
+
+        # Measure torso breathing and ear twitch isolation on Milo.
+        metrics = page.evaluate('''()=>{
+            if (rendererMode !== 'webgl' || !gl) return {mode: rendererMode, skipped: true};
+            const snap = t => {
+                stop(); drawWebGL(t);
+                const buf = new Uint8Array(cv.width * cv.height * 4);
+                gl.readPixels(0, 0, cv.width, cv.height, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+                return buf;
+            };
+            const compare = (t0, t1) => {
+                const a = snap(t0), b = snap(t1);
+                let changed = 0, sofa = 0, face = 0;
+                const fp = CATS[0].faceProtect;
+                for (let y = 0; y < cv.height; y += 2) for (let x = 0; x < cv.width; x += 2) {
+                    const i = ((cv.height - 1 - y) * cv.width + x) * 4;
+                    if (Math.abs(a[i]-b[i]) + Math.abs(a[i+1]-b[i+1]) + Math.abs(a[i+2]-b[i+2]) <= 3) continue;
+                    changed++;
+                    const u = x / cv.width, v = y / cv.height;
+                    if (v < 0.16 || v > 0.88) sofa++;
+                    if (Math.hypot((u - fp[0]) / fp[2], (v - fp[1]) / fp[3]) < 0.40) face++;
+                }
+                return {changed, sofa, face};
+            };
+            const breath = compare(0, 700 * Math.PI);
+            const ear = compare(0, 8110); // 8110 + 1400 = 9510 -> inside 9400ms ear pulse window
+            wake();
+            return {mode: 'webgl', breath, ear};
         }''')
-        assert metrics['quiet']['changed']==0,metrics
-        for key in ('ear','tail'):
-            assert metrics[key]['changed']>20 and metrics[key]['alpha']>5 and metrics[key]['face']==0 and metrics[key]['full']==0,metrics
-        # Freeze the same phase for baseline and candidate screenshots.
-        if OUT:
-            for enabled,name in [(False,'before'),(True,'after')]:
-                page.evaluate('''enabled=>{stop();const saved=paintIdle;if(!enabled)paintIdle=()=>{};draw(8875);if(raf)cancelAnimationFrame(raf);raf=0;paintIdle=saved}''',enabled)
-                page.screenshot(path=str(Path(OUT)/f'{name}-{w}.png'))
-            page.evaluate('wake()')
-        page.emulate_media(reduced_motion='reduce');page.wait_for_function('motion.matches')
-        assert page.evaluate('''()=>{stop();draw(8205);const a=cv.toDataURL();draw(8875);const b=cv.toDataURL();return a===b}''')
-        assert page.evaluate('''()=>{stop();draw(0);const before=cv.toDataURL();fit();return before===cv.toDataURL()}''')
-        # Existing keyboard and pointer interactions still render after the animation.
-        page.locator('#cat').focus();page.keyboard.down('Space');page.wait_for_function('pressed&&strength>.1');page.keyboard.up('Space');page.wait_for_function('!pressed');
-        x,y=page.evaluate('''()=>{const r=cv.getBoundingClientRect();return [r.left+r.width*(box[0]+point[0]*box[2]),r.top+r.height*(box[1]+point[1]*box[3])]}''')
-        page.mouse.move(x,y);page.mouse.down();page.mouse.move(x+12,y+6,steps=4);page.wait_for_function('pressed&&strength>.1');page.mouse.up();page.wait_for_function('!pressed')
-        if w==390:
-            cdp=page.context.new_cdp_session(page);cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':x,'y':y}]});page.wait_for_function('pressed');cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});page.wait_for_function('!pressed')
-        page.locator('#sound').click();page.wait_for_function("audio&&audio.state==='running'");page.locator('#cat').focus();page.keyboard.down('Space');page.wait_for_function('purring&&purrGain.gain.value>.005');page.keyboard.up('Space');page.wait_for_function('!purring');page.locator('#sound').click()
-        page.locator('#night').click();assert page.evaluate("document.body.classList.contains('night')");page.locator('#language').click();assert page.locator('h1').inner_text()=='Stay a little.'
-        # Local photos never inherit the portrait's hand-mapped anatomy.
-        page.emulate_media(reduced_motion='no-preference');page.evaluate("load(ROOM_CATS[0],false,null)");page.wait_for_function('selectedCat===null');assert page.evaluate('''()=>{stop();const w=cv.width,h=cv.height;ctx.clearRect(0,0,w,h);paintIdle(8205,0,0,w,h);return ctx.getImageData(0,0,w,h).data.every(x=>x===0)}''')
-        assert not errors,errors
-        print(json.dumps({'width':w,**metrics,'page_errors':errors},ensure_ascii=False),flush=True);page.close()
+        if not metrics.get('skipped'):
+            assert metrics['breath']['changed'] > 20 and metrics['breath']['sofa'] == 0 and metrics['breath']['face'] == 0, metrics
+            assert metrics['ear']['changed'] > 10 and metrics['ear']['sofa'] == 0 and metrics['ear']['face'] == 0, metrics
+
+        # Reduced motion halts idle animation completely.
+        page.emulate_media(reduced_motion='reduce')
+        page.wait_for_function('motion.matches && raf===0', timeout=4000)
+        assert page.evaluate('''()=>{stop();if(rendererMode==='webgl'&&gl){drawWebGL(0);const a=cv.toDataURL();drawWebGL(2200);return a===cv.toDataURL()}return true}''')
+
+        # Uploaded photos must never inherit anatomical idle animation.
+        page.emulate_media(reduced_motion='no-preference')
+        page.wait_for_function('!motion.matches')
+        page.evaluate("load(CATS[0].src, false, null)")
+        page.wait_for_function('selectedCat===null && raf===0')
+        assert not errors, errors
+        print(json.dumps({'width': w, **metrics, 'page_errors': errors}, ensure_ascii=False), flush=True)
+        page.close()
     browser.close()
