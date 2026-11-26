@@ -1130,7 +1130,7 @@ function fit(){
   }
   const w=cv.clientWidth,h=cv.clientHeight;
   if(!w||!h)return;
-  const d=Math.min(devicePixelRatio||1,2,Math.sqrt(1800000/(w*h)));
+  const d=Math.min(devicePixelRatio||1,1.5,Math.sqrt(1200000/(w*h)));
   const rw=Math.max(1,Math.round(w*d)),rh=Math.max(1,Math.round(h*d));
   if(cv.width!==rw)cv.width=rw;
   if(cv.height!==rh)cv.height=rh;
@@ -1144,11 +1144,18 @@ function fit(){
   wake();
 }
 
+let lastPaint=0;
 function draw(t){
   raf=0;
   if(!image||failed||!visible||document.hidden)return;
+  const activeInteraction=pressed||strength>.004||trail.length>0||Math.hypot(...delta)>.001;
+  // Full frame rate while petting; calm ~28fps pacing while only gently breathing at rest.
+  if(!activeInteraction&&lastPaint&&t-lastPaint<36){
+    if(needsFrame())wake();
+    return;
+  }
   const dt=last?Math.min(50,t-last):16;
-  last=t;
+  last=t;lastPaint=t;
   const k=1-Math.exp(-dt/75);
   strokeEnergy+=(pressed?Math.min(1,Math.hypot(...delta)*26):0-strokeEnergy)*(1-Math.exp(-dt/180));
   strokeEnergy=Math.max(0,Math.min(1,strokeEnergy));
@@ -1203,12 +1210,14 @@ function load(src,revoke=false,catIndex=null){
   const fail=()=>{if(id!==loadId)return;if(!image)preview.hidden=true;say(image?'Image could not load; previous cat kept. / 图片无法使用，保留原猫咪。':'Sample unavailable. Choose a local photo. / 素材无法加载，请选择本地图片。')};
   im.onload=()=>{try{
     if(id!==loadId)return;
-    const c=document.createElement('canvas'),ratio=Math.min(1,1600/Math.max(im.naturalWidth,im.naturalHeight));
+    const c=document.createElement('canvas'),ratio=Math.min(1,1200/Math.max(im.naturalWidth,im.naturalHeight));
     c.width=Math.max(1,Math.round(im.naturalWidth*ratio));
     c.height=Math.max(1,Math.round(im.naturalHeight*ratio));
     const cc=c.getContext('2d');if(!cc)throw Error('image context');
     cc.drawImage(im,0,0,c.width,c.height);
     const nextMask=makeMask(c);
+    if(raf){cancelAnimationFrame(raf);raf=0}
+    lastPaint=0;
     image=c;mask=nextMask;selectedCat=catIndex;
     uploadTexture();
     roomPhotoCredit();
