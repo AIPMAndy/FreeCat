@@ -4,13 +4,14 @@ on:
   pull_request:
     paths:
       - 'scripts/acquire_room_photos.py'
+      - 'experiments/full-body/**'
       - '.github/workflows/verify-room-photography.yml'
 permissions:
   contents: read
 jobs:
   acquire:
     runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,3 +26,12 @@ jobs:
           path: verified-room-photos/
           if-no-files-found: error
           retention-days: 7
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install playwright==1.51.0
+          python -m playwright install --with-deps chromium webkit
+      - name: Verify full-body prototype in both browser engines
+        run: |
+          cp verified-room-photos/sonkiki.webp experiments/full-body/sonkiki.webp
+          FREECAT_BROWSER=chromium python experiments/full-body/check.py
+          FREECAT_BROWSER=webkit python experiments/full-body/check.py
