@@ -1,5 +1,9 @@
 # FreeCat · 全球猫咪乐园
 
+**面向全球爱猫人的免费开源本地优先云撸猫应用**：WebGL 触感撸猫与真实呼噜声、20 品种图鉴、视觉特征匹配、猫咪日记、科学养猫指南与互动问答（中英双语，无需注册或 API Key）。
+
+[在线撸猫](https://aipmandy.github.io/FreeCat/) · [经典首页](https://aipmandy.github.io/FreeCat/index.html#pet) · [素材溯源](docs/room-media.md) · [品种图鉴来源](docs/atlas-photography.md) · [路线图](ROADMAP.md) · [AI 酋长 Andy](https://metaver.vip/) · 微信 `AIPMAndy`
+
 **A world for cat lovers.** A free, local-first web app for people who live with cats, are considering adoption, or simply love cats from afar. Start with a virtual cat you can pet; explore, identify visual traits, collect, learn responsible care, and play.
 
 ## What's included (v0.2.1)
@@ -44,7 +48,7 @@ Priority: actual mobile and desktop tests; WebGL/WASM fur performance; accessibi
 
 MIT for original software in this release. External linked references retain their own rights. No third-party reference-site code or images are included. The initial virtual cat is inspired by the general concept of petting a cat online, not a source-code clone.
 
-By AI 酋长 Andy · 星觉科技 — https://metaver.vip/
+By **AI 酋长 Andy · 星觉科技** — [在线撸猫](https://aipmandy.github.io/FreeCat/) · [个人官网](https://metaver.vip/) · [公司官网](https://www.a6no1.cn/) · 微信 `AIPMAndy` · [GitHub](https://github.com/AIPMAndy)
 
 ## Validation
 
@@ -107,3 +111,7 @@ The room uses the bundled Ariadne MP3 after user activation instead of remote Og
 PR #6 (`freecat/round-37-photo-candidates`) was merged into `main`, and the official homepage room (`room.html`) now opens directly to **three verified, locally bundled high-resolution real photographs** — Milo (curled tabby on sofa, Sonkiki, 1024×1024, conservative CC BY-SA 4.0 / CC0 compliance), Linen (tabby dozing on cream blanket, Erik-Jan Leusink, 1200×800, CC0), and Siam (overhead curled Siamese on botanical linen, Gzzz, 923×1080, CC BY-SA 4.0) — alongside two explicitly labeled AI-generated studio cats and local photo upload. See [media provenance](docs/room-media.md) for exact checksums, crop details, and licenses.
 
 The tactile engine uses a single-pass **WebGL displacement shader** (with automatic Canvas 2D fallback) featuring multi-node spring-damped continuous fur parting, subtle velvet light modulation, per-pixel anatomical body masking (0 pixel drift on sofa/blanket/linen backgrounds), eye/nose protection, and masked organic breathing + ear micro-twitch that honors `prefers-reduced-motion` and rests completely on uploaded photos. First touch activates the bundled Ariadne MP3 purr with stroke-linked volume warmth. Desktop and mobile layouts are individually tailored around the cat stage with circular thumbnail swatches and an upgraded 1200×630 `assets/social-card.jpg`.
+
+---
+
+**AI 酋长 Andy · 星觉科技** — [在线撸猫](https://aipmandy.github.io/FreeCat/) · [个人官网](https://metaver.vip/) · [公司官网](https://www.a6no1.cn/) · 微信 `AIPMAndy` · [GitHub](https://github.com/AIPMAndy)
