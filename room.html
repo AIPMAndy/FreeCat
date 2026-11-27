@@ -31,6 +31,9 @@
   --surface-strong:rgba(255,252,245,.92);
   --accent:#3b614b;
   --accent-soft:rgba(59,97,75,.14);
+  --gold:#b58c4b;
+  --gold-line:rgba(181,140,75,.34);
+  --gold-soft:rgba(181,140,75,.10);
   --shadow:rgba(46,36,26,.11);
   --frame-bg:#e9e2d6;
   --pill-bg:rgba(28,24,20,.64);
@@ -57,6 +60,9 @@ body.night{
   --surface-strong:rgba(34,40,36,.94);
   --accent:#b9d0a8;
   --accent-soft:rgba(185,208,168,.16);
+  --gold:#dfc084;
+  --gold-line:rgba(223,192,132,.30);
+  --gold-soft:rgba(223,192,132,.10);
   --shadow:rgba(0,0,0,.42);
   --frame-bg:#212723;
   --pill-bg:rgba(16,20,18,.72);
@@ -92,39 +98,67 @@ button:active:not(:disabled){transform:scale(.97)}
   padding-right:max(clamp(14px,3.5vw,44px),env(safe-area-inset-right));
 }
 
-/* Whisper-quiet top bar */
+/* Top Header + Elevated Primary Navigation */
 .top{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:12px;
-  padding:2px 0 8px;
+  flex-wrap:wrap;
+  gap:10px 14px;
+  padding:2px 0 10px;
+  border-bottom:1px solid var(--line);
+  margin-bottom:8px;
 }
-.brand-group{display:flex;align-items:center;gap:14px;min-width:0}
+.brand-group{display:flex;align-items:center;gap:12px;min-width:0}
 .brand{
   display:inline-flex;
   align-items:center;
-  gap:9px;
-  font-size:18px;
-  font-weight:700;
-  letter-spacing:-.035em;
-  white-space:nowrap;
-}
-.brand-icon{width:30px;height:30px;display:block;flex:none;border-radius:9px}
-.whisper-title{
-  display:flex;
-  align-items:baseline;
   gap:10px;
-  min-width:0;
-  border-left:1px solid var(--line);
-  padding-left:14px;
-}
-h1{
-  margin:0;
-  font:400 clamp(17px,1.9vw,22px)/1.2 Georgia,"Songti SC","Noto Serif SC",serif;
-  letter-spacing:-.025em;
-  color:var(--ink);
+  font-size:19px;
+  font-weight:700;
+  letter-spacing:-.03em;
   white-space:nowrap;
+}
+.brand-icon{
+  width:34px;
+  height:34px;
+  display:block;
+  flex:none;
+  border-radius:10px;
+  box-shadow:0 4px 14px -4px var(--shadow);
+}
+.primary-nav{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  padding:3px;
+  border-radius:999px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  overflow-x:auto;
+  scrollbar-width:none;
+  max-width:100%;
+}
+.primary-nav::-webkit-scrollbar{display:none}
+.primary-nav a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:38px;
+  padding:6px 13px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:520;
+  color:var(--muted);
+  white-space:nowrap;
+  transition:background .16s ease,color .16s ease;
+}
+.primary-nav a:hover{color:var(--ink);background:var(--surface-strong)}
+.primary-nav a[aria-current=page]{
+  background:var(--ink);
+  color:var(--bg);
+  font-weight:620;
 }
 .top-actions{display:flex;align-items:center;gap:6px;flex:none}
 .top-actions button{
@@ -141,14 +175,28 @@ h1{
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:12px;
+  gap:10px;
   min-height:0;
+}
+.stage-heading{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  width:100%;
+}
+h1{
+  margin:0;
+  font:400 clamp(19px,2.1vw,25px)/1.2 Georgia,"Songti SC","Noto Serif SC",serif;
+  letter-spacing:-.025em;
+  color:var(--ink);
+  white-space:nowrap;
 }
 .stage{
   position:relative;
   isolation:isolate;
   width:100%;
-  height:clamp(390px,65svh,650px);
+  height:clamp(340px,56svh,590px);
   display:grid;
   place-items:center;
   margin:0;
@@ -404,27 +452,78 @@ canvas:focus-visible{outline-offset:-4px;border-radius:24px}
   font-size:11px;
 }
 
-/* Quiet world navigation & footer */
-.nav{
+/* Prominent Luxury Creator Signature Bar (WeChat + Personal Website) */
+.creator-bar{
+  width:100%;
+  max-width:860px;
+  margin:6px auto 0;
+  padding:10px 16px;
+  border-radius:18px;
+  background:linear-gradient(135deg,var(--surface-strong),var(--gold-soft));
+  border:1px solid var(--gold-line);
+  box-shadow:0 10px 28px -22px var(--shadow);
   display:flex;
   align-items:center;
-  justify-content:center;
+  justify-content:space-between;
   flex-wrap:wrap;
-  gap:2px 12px;
-  border-top:1px solid var(--line);
-  padding:10px 0 2px;
-  margin-top:auto;
+  gap:10px 14px;
 }
-.nav a{
+.creator-id{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+.creator-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 0 3px var(--gold-soft);
+  flex:none;
+}
+.creator-text{display:flex;flex-direction:column;gap:1px;min-width:0}
+.creator-name{font-size:13px;font-weight:680;color:var(--ink);letter-spacing:-.01em}
+.creator-sub{font-size:11px;color:var(--muted)}
+.creator-links{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.creator-btn{
   display:inline-flex;
   align-items:center;
-  padding:7px 10px;
-  color:var(--muted);
-  font-size:13px;
-  border-radius:10px;
-  transition:background .15s ease,color .15s ease;
+  justify-content:center;
+  gap:7px;
+  min-height:44px;
+  padding:8px 15px;
+  border-radius:999px;
+  font-size:12.5px;
+  font-weight:600;
+  letter-spacing:.01em;
+  border:1px solid var(--gold-line);
+  background:var(--surface-strong);
+  color:var(--ink);
+  transition:transform .14s ease,background .18s ease,border-color .18s ease,opacity .18s ease;
 }
-.nav a:hover{background:var(--surface);color:var(--ink)}
+.creator-btn:hover{border-color:var(--gold);transform:translateY(-1px)}
+.creator-btn.site-cta{
+  background:var(--ink);
+  color:var(--bg);
+  border-color:var(--ink);
+}
+.creator-btn.site-cta:hover{opacity:.9;background:var(--ink);color:var(--bg)}
+.creator-btn svg{width:15px;height:15px;flex:none}
+.creator-tag{
+  font-size:10px;
+  font-weight:650;
+  padding:2px 7px;
+  border-radius:999px;
+  background:var(--gold-soft);
+  color:var(--gold);
+}
+
 footer{
   display:flex;
   justify-content:space-between;
@@ -433,11 +532,36 @@ footer{
   flex-wrap:wrap;
   font-size:11px;
   color:var(--muted);
-  padding:4px 0 0;
+  padding:10px 0 0;
+  margin-top:auto;
 }
 footer a{text-decoration:underline;text-underline-offset:3px}
 .caption,footer{overflow-wrap:anywhere}
 
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:max(22px,env(safe-area-inset-bottom));
+  transform:translate(-50%,14px);
+  opacity:0;
+  pointer-events:none;
+  padding:10px 18px;
+  border-radius:999px;
+  background:var(--ink);
+  color:var(--bg);
+  font-size:13px;
+  font-weight:550;
+  box-shadow:0 10px 30px -10px var(--shadow);
+  transition:opacity .2s ease,transform .2s ease;
+  z-index:20;
+  max-width:90vw;
+  text-align:center;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:960px){
+  .primary-nav{order:3;flex-basis:100%;justify-content:flex-start;padding:4px}
+}
 /* Dedicated Mobile Sanctuary Layout (thumb-first, full visual prominence, zero dead gaps) */
 @media(max-width:680px){
   .shell{
@@ -446,22 +570,16 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     padding-left:max(12px,env(safe-area-inset-left));
     padding-right:max(12px,env(safe-area-inset-right));
   }
-  .top{padding:0 2px 6px}
+  .top{padding:0 0 8px;gap:8px;margin-bottom:6px}
   .brand{font-size:17px}
-  .brand-icon{width:28px;height:28px}
-  .whisper-title{display:none}
-  .mobile-bar{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    width:100%;
-    padding:0 4px;
-  }
-  .mobile-bar h1{font-size:20px}
-  .sanctuary{gap:10px;justify-content:center;padding-top:2px}
+  .brand-icon{width:30px;height:30px}
+  .primary-nav{gap:1px;padding:3px}
+  .primary-nav a{min-height:40px;padding:6px 6.5px;font-size:11.5px}
+  .sanctuary{gap:9px;justify-content:flex-start;padding-top:2px}
+  h1{font-size:19px}
   .stage{
-    height:min(52svh,440px);
-    min-height:240px;
+    height:min(46svh,390px);
+    min-height:220px;
   }
   .frame{
     border-radius:22px;
@@ -470,23 +588,23 @@ footer a{text-decoration:underline;text-underline-offset:3px}
   .dock{
     flex-direction:column;
     align-items:center;
-    gap:9px;
-    padding:0 0 6px;
+    gap:8px;
+    padding:0 0 4px;
   }
   .swatches{justify-content:center;gap:8px}
   .swatch{width:44px;height:44px;min-height:44px}
   .controls{width:100%;justify-content:center;gap:7px}
   .controls #sound{min-width:124px;padding:9px 14px}
-  .nav{gap:0 4px;padding:6px 0 0}
-  .nav a{font-size:12px;padding:7px 8px}
-  footer{justify-content:center;text-align:center;font-size:10.5px}
-}
-@media(min-width:681px){
-  .mobile-bar{display:none}
+  .creator-bar{padding:11px 12px;border-radius:16px;justify-content:center;text-align:center}
+  .creator-id{justify-content:center}
+  .creator-links{width:100%;justify-content:center}
+  .creator-btn{flex:1 1 auto;min-width:140px;padding:8px 12px;font-size:12px}
+  footer{justify-content:center;text-align:center;font-size:10.5px;padding-top:8px}
 }
 @media(max-width:350px){
   .swatch{width:40px;height:40px;min-height:44px}
   .controls button,.controls summary{font-size:12px;padding:8px 12px}
+  .creator-btn{min-width:0;width:100%}
 }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}
@@ -498,13 +616,18 @@ footer a{text-decoration:underline;text-underline-offset:3px}
   <header class="top">
     <div class="brand-group">
       <a class="brand" href="room.html" aria-label="FreeCat">
-        <img class="brand-icon" src="assets/freecat.svg" width="30" height="30" alt="" decoding="async">
+        <img class="brand-icon" src="assets/freecat.svg" width="34" height="34" alt="" decoding="async">
         <span>FreeCat</span>
       </a>
-      <div class="whisper-title">
-        <h1 id="headline" data-en="Stay a little." data-zh="来，摸一会儿猫。">Stay a little.</h1>
-      </div>
     </div>
+    <nav class="primary-nav nav" aria-label="Main navigation">
+      <a href="room.html" aria-current="page" data-en="Pet" data-zh="撸猫">Pet</a>
+      <a href="index.html#discover" data-en="Cat atlas" data-zh="猫咪图鉴">Cat atlas</a>
+      <a href="index.html#identify" data-en="Identify" data-zh="猫咪辨认">Identify</a>
+      <a href="index.html#collection" data-en="Cat album" data-zh="猫咪相册">Cat album</a>
+      <a href="index.html#care" data-en="Cat care" data-zh="养猫攻略">Cat care</a>
+      <a href="index.html#play" data-en="Play" data-zh="猫咪乐园">Play</a>
+    </nav>
     <div class="top-actions">
       <button id="night" aria-pressed="false" type="button" data-en="Night" data-zh="夜间">Night</button>
       <button id="language" type="button" aria-label="Switch language">中文</button>
@@ -512,8 +635,8 @@ footer a{text-decoration:underline;text-underline-offset:3px}
   </header>
 
   <section class="sanctuary" aria-label="Interactive cat room">
-    <div class="mobile-bar">
-      <h1 id="mobileHeadline" data-en="Stay a little." data-zh="来，摸一会儿猫。">Stay a little.</h1>
+    <div class="stage-heading">
+      <h1 id="headline" data-en="Stay a little." data-zh="来，摸一会儿猫。">Stay a little.</h1>
     </div>
 
     <div class="stage real-photo" id="stage">
@@ -566,20 +689,34 @@ footer a{text-decoration:underline;text-underline-offset:3px}
         </details>
       </div>
     </div>
+    <aside class="creator-bar" aria-label="Creator contact">
+      <div class="creator-id">
+        <span class="creator-dot" aria-hidden="true"></span>
+        <div class="creator-text">
+          <span class="creator-name" data-en="Created by AI Chief Andy" data-zh="AI 酋长 Andy · 开源出品">Created by AI Chief Andy</span>
+          <span class="creator-sub" data-en="Connect or explore more AI creations" data-zh="欢迎加微信交流，或访问个人网站了解更多">Connect or explore more AI creations</span>
+        </div>
+      </div>
+      <div class="creator-links">
+        <button id="copyWechat" class="creator-btn" type="button">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.8 4C4.5 4 1 6.9 1 10.6c0 2.1 1.1 3.9 2.9 5.2l-.7 2.4 2.6-1.3c1 .3 2 .4 3 .4.3 0 .6 0 .9-.1-.2-.6-.3-1.2-.3-1.9 0-3.7 3.4-6.6 7.7-6.6h.5C16.7 6 13.1 4 8.8 4Zm-2.5 5.2a1.1 1.1 0 1 1 0-2.2 1.1 1.1 0 0 1 0 2.2Zm5 0a1.1 1.1 0 1 1 0-2.2 1.1 1.1 0 0 1 0 2.2ZM16.9 10c-3.5 0-6.4 2.4-6.4 5.4s2.9 5.4 6.4 5.4c.8 0 1.6-.1 2.4-.4l2.2 1.1-.6-2c1.4-1 2.4-2.5 2.4-4.1 0-3-2.9-5.4-6.4-5.4Zm-2.1 4.5a.95.95 0 1 1 0-1.9.95.95 0 0 1 0 1.9Zm4.2 0a.95.95 0 1 1 0-1.9.95.95 0 0 1 0 1.9Z"/></svg>
+          <span data-en="WeChat: AIPMAndy" data-zh="微信：AIPMAndy">WeChat: AIPMAndy</span>
+          <span class="creator-tag" id="wechatCopyTag" data-en="Copy" data-zh="复制">Copy</span>
+        </button>
+        <a id="andySite" class="creator-btn site-cta" href="https://metaver.vip/" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+          <span data-en="metaver.vip ↗" data-zh="个人网站 · metaver.vip ↗">metaver.vip ↗</span>
+        </a>
+      </div>
+    </aside>
   </section>
 
-  <nav class="nav" aria-label="Explore FreeCat">
-    <a href="index.html#discover" data-en="Cat atlas" data-zh="猫咪图鉴">Cat atlas</a>
-    <a href="index.html#identify" data-en="Identify" data-zh="猫咪辨认">Identify</a>
-    <a href="index.html#collection" data-en="My cats" data-zh="我的猫册">My cats</a>
-    <a href="index.html#care" data-en="Cat care" data-zh="养猫攻略">Cat care</a>
-    <a href="index.html#play" data-en="Play" data-zh="猫咪乐园">Play</a>
-  </nav>
   <footer>
     <span data-en="Free · Private · Open source" data-zh="免费 · 隐私本地运行 · 开源">Free · Private · Open source</span>
-    <span><a href="https://github.com/AIPMAndy/FreeCat" data-en="GitHub (MIT)" data-zh="开源仓库 (MIT)">GitHub (MIT)</a> · <a href="https://metaver.vip/">AI 酋长 Andy</a></span>
+    <span><a href="https://github.com/AIPMAndy/FreeCat" data-en="GitHub (MIT)" data-zh="开源仓库 (MIT)">GitHub (MIT)</a> · <a href="https://metaver.vip/" target="_blank" rel="noopener noreferrer">metaver.vip</a> · <span data-en="WeChat: AIPMAndy" data-zh="微信：AIPMAndy">WeChat: AIPMAndy</span></span>
   </footer>
 </main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 'use strict';
@@ -1405,6 +1542,17 @@ $('defaultCat').onclick=()=>{load(CATS[PHOTO_CAT].src,false,PHOTO_CAT);closeOpti
 $('nextCat').onclick=()=>{const next=selectedCat===null?PHOTO_CAT:(selectedCat+1)%CATS.length;load(CATS[next].src,false,next)};
 $('file').addEventListener('change',()=>{closeOptions(true)});
 $('reset').addEventListener('click',()=>{closeOptions(true)});
+let toastTimer=0;
+function showToast(msg){const t=$('toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2400)}
+$('copyWechat').onclick=async()=>{
+  const id='AIPMAndy';
+  let ok=false;
+  try{if(navigator.clipboard){await navigator.clipboard.writeText(id);ok=true}}catch{}
+  if(!ok){try{const ta=document.createElement('textarea');ta.value=id;ta.style.position='fixed';ta.style.opacity='0';document.body.append(ta);ta.select();ok=document.execCommand('copy');ta.remove()}catch{}}
+  const tag=$('wechatCopyTag');
+  if(tag){tag.textContent=roomLang==='zh'?'已复制 ✓':'Copied ✓';setTimeout(()=>{tag.textContent=tag.dataset[roomLang]},2200)}
+  showToast(ok?(roomLang==='zh'?'已复制微信号：AIPMAndy':'Copied WeChat ID: AIPMAndy'):(roomLang==='zh'?'微信号：AIPMAndy（请手动复制）':'WeChat ID: AIPMAndy'));
+};
 new MutationObserver(roomSound).observe(soundButton,{attributes:true,attributeFilter:['aria-pressed']});
 
 const disclosure=$('options'),summary=disclosure.querySelector('summary');

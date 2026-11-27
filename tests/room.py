@@ -31,9 +31,10 @@ with sync_playwright() as p:
         page.evaluate('soundMuted=true')
         if OUTPUT: page.screenshot(path=str(Path(OUTPUT) / f'after-{w}.png'))
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
-        h1_id = '#mobileHeadline' if w <= 680 else '#headline'
-        assert page.locator(h1_id).inner_text() == '来，摸一会儿猫。'
+        assert page.locator('#headline').inner_text() == '来，摸一会儿猫。'
         assert page.locator('#status').inner_text() == '可以开始抚摸'
+        assert 'AIPMAndy' in page.locator('#copyWechat').inner_text()
+        assert page.locator('#andySite').get_attribute('href') == 'https://metaver.vip/'
         canvas = page.locator('#cat')
         r = canvas.bounding_box()
         x, y = page.evaluate('()=>{const r=cv.getBoundingClientRect();return [r.left+r.width*(box[0]+point[0]*box[2]),r.top+r.height*(box[1]+point[1]*box[3])]}')
@@ -57,13 +58,13 @@ with sync_playwright() as p:
         page.locator('#night').click(); assert page.locator('body').evaluate("el=>el.classList.contains('night')")
         if OUTPUT: page.screenshot(path=str(Path(OUTPUT) / f'night-{w}.png'))
         page.locator('#language').click()
-        assert page.locator(h1_id).inner_text() == 'Stay a little.'
+        assert page.locator('#headline').inner_text() == 'Stay a little.'
         assert page.locator('#status').inner_text() == 'Ready to pet'
         page.locator('summary').click(); page.locator('#defaultCat').click()
         page.wait_for_function('!!mask && !failed')
         assert not page.locator('#options').evaluate('el=>el.open')
-        assert page.locator('.nav a').evaluate_all('els=>els.map(e=>e.getAttribute("href"))') == [
-            'index.html#discover', 'index.html#identify', 'index.html#collection', 'index.html#care', 'index.html#play'
+        assert page.locator('.primary-nav a').evaluate_all('els=>els.map(e=>e.getAttribute("href"))') == [
+            'room.html', 'index.html#discover', 'index.html#identify', 'index.html#collection', 'index.html#care', 'index.html#play'
         ]
         assert not errors, errors
         print(json.dumps({'width': w, 'canvas': r, 'scroll_height': page.evaluate('document.documentElement.scrollHeight'), 'errors': errors}, ensure_ascii=False), flush=True)

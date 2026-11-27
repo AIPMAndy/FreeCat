@@ -29,8 +29,8 @@ with sync_playwright() as p:
             page.locator('summary').click()
             page.wait_for_function("document.querySelector('.options button').getBoundingClientRect().bottom<=innerHeight+1")
             if out: page.screenshot(path=str(Path(out) / f'after-{w}-{loc}.png'), full_page=True)
-            metrics = page.evaluate('''()=>{const r=document.querySelector('.options').getBoundingClientRect(),n=document.querySelector('.nav').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,navTop:n.top,scrollWidth:document.documentElement.scrollWidth,innerWidth,scrollHeight:document.documentElement.scrollHeight}}''')
-            assert metrics['left'] >= 0 and metrics['right'] <= w + 1 and metrics['bottom'] <= metrics['navTop'] + 1, metrics
+            metrics = page.evaluate('''()=>{const r=document.querySelector('.options').getBoundingClientRect(),n=document.querySelector('.primary-nav').getBoundingClientRect(),c=document.querySelector('.creator-bar').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,navBottom:n.bottom,creatorTop:c.top,scrollWidth:document.documentElement.scrollWidth,innerWidth,scrollHeight:document.documentElement.scrollHeight}}''')
+            assert metrics['left'] >= 0 and metrics['right'] <= w + 1 and metrics['top'] >= metrics['navBottom'] - 1 and metrics['bottom'] <= metrics['creatorTop'] + 1, metrics
             page.keyboard.press('Escape')
             assert not page.locator('#options').evaluate('e=>e.open')
             assert page.evaluate('document.activeElement===summary')
