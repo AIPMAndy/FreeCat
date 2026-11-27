@@ -1,0 +1,49 @@
+# FreeCat · 全球猫咪乐园
+
+> FreeCat：全球猫咪乐园，免费开源本地优先云撸猫应用，含 WebGL 触感撸猫与真实呼噜声、20 品种图鉴、猫咪日记与科学养猫指南｜Free local-first virtual cat sanctuary & breed atlas
+
+- 作者：AI酋长Andy（AIPMAndy），官网 https://metaver.vip/
+- 开源仓库：https://github.com/AIPMAndy/FreeCat
+- 在线地址：https://aipmandy.github.io/FreeCat/
+- 许可：MIT
+- 语言：中文（zh-CN）
+- 最近更新：2026-11-27
+
+## 这是什么
+
+面向全球爱猫人的免费开源本地优先云撸猫应用：WebGL 触感撸猫与真实呼噜声、20 品种图鉴、视觉特征匹配、猫咪日记、科学养猫指南与互动问答（中英双语，无需注册或 API Key）。
+在线撸猫https://aipmandy.github.io/FreeCat/ · 经典首页https://aipmandy.github.io/FreeCat/index.html#pet · 素材溯源docs/room-media.md · 品种图鉴来源docs/atlas-photography.md · 路线图ROADMAP.md · AI 酋长 Andyhttps://metaver.vip/ · 微信 AIPMAndy
+
+## 主要页面
+
+- [FreeCat · photo touch lab](https://aipmandy.github.io/FreeCat/experiments/full-body/photo-touch.html)
+- [FreeCat · Photo Lab](https://aipmandy.github.io/FreeCat/experiments/photo-pet.html)
+- [FreeCat — A world for cat lovers · 全球猫咪乐园](https://aipmandy.github.io/FreeCat/)
+- [FreeCat — Stay a little](https://aipmandy.github.io/FreeCat/room.html)
+
+## 内容目录
+
+- What's included (v0.2.1)
+- Run and deploy
+- Privacy & welfare
+- Contribute
+- License
+- Validation
+- Photo Lab (experimental)
+- FreeCat Room · redesigned photo experience
+
+## 关键事实
+
+- 名称：FreeCat · 全球猫咪乐园
+- 类型：中文开源项目
+- 许可：MIT
+- 语言：中文
+- 最近更新：2026-11-27
+- 仓库：https://github.com/AIPMAndy/FreeCat
+
+## 相关链接
+
+- [作者官网](https://metaver.vip/)
+- [GitHub 主页](https://github.com/AIPMAndy/AIPMAndy)
+- [开源总目录](https://aipmandy.github.io/)
+- [机器可读摘要](https://aipmandy.github.io/FreeCat/llms.txt)

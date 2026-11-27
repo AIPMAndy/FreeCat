@@ -6,6 +6,29 @@
 
 **A world for cat lovers.** A free, local-first web app for people who live with cats, are considering adoption, or simply love cats from afar. Start with a virtual cat you can pet; explore, identify visual traits, collect, learn responsible care, and play.
 
+<!-- andy-geo:start -->
+## 一句话简介
+
+**FreeCat：全球猫咪乐园，免费开源本地优先云撸猫应用，含 WebGL 触感撸猫与真实呼噜声、20 品种图鉴、猫咪日记与科学养猫指南｜Free local-first virtual cat sanctuary & breed atlas**
+
+- 作者：AI酋长Andy（Andy Liu，英文名 AI Chief Andy），流量 AI 联合创始人、星觉 AI 创始人。星觉科技，北京。
+- 阅读或使用：[在线阅读/使用](https://aipmandy.github.io/FreeCat/) · [GitHub 仓库](https://github.com/AIPMAndy/FreeCat)
+- 联系：微信 `AIPMAndy`（备注「FreeCat」）· [官网 metaver.vip](https://metaver.vip/) · [X @AIPMAndy](https://x.com/AIPMAndy)
+- 许可：MIT。内容免费使用；企业合作或个人陪跑请先沟通，公开页不公示价格。
+- 机器可读摘要：[llms.txt](llms.txt)（供 AI 引擎与检索工具读取）
+
+## 常见问题
+
+**这是什么？**FreeCat：全球猫咪乐园，免费开源本地优先云撸猫应用，含 WebGL 触感撸猫与真实呼噜声、20 品种图鉴、猫咪日记与科学养猫指南｜Free local-first virtual cat sanctuary & breed atlas
+
+**包含什么？**主要模块：What's included (v0.2.1)、Run and deploy、Privacy & welfare、Contribute、License、Validation。
+
+**要花钱吗？**按 MIT 许可免费使用；付费只涉及作者的企业合作与一对一咨询，不影响仓库内容。
+
+**怎么开始？**直接打开 https://aipmandy.github.io/FreeCat/ 在线阅读；想本地运行或参与贡献，见下方 README 的快速开始部分。
+
+<!-- andy-geo:end -->
+
 ## What's included (v0.2.1)
 
 - Pet: original procedural Canvas 2D cat and fur, eight coats, size, optional synthesized purr, keyboard and pointer interaction, themes, daily local companionship time.
