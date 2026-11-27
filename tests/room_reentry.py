@@ -62,9 +62,8 @@ with sync_playwright() as pw:
             p.locator('#sound').click(); assert p.evaluate('audio===null')
             p.locator('#night').click(); assert p.evaluate("document.body.classList.contains('night')")
             p.locator('#language').click()
-            h1_id = '#mobileHeadline' if w <= 680 else '#headline'
-            assert p.locator(h1_id).inner_text() == 'Stay a little.'
-            assert len(p.locator('.nav a').all()) == 5
+            assert p.locator('#headline').inner_text() == 'Stay a little.'
+            assert len(p.locator('.primary-nav a').all()) == 6
             assert not errors, errors
             print(json.dumps(dict(w=w, asset=name, errors=errors)), flush=True)
             p.close()
